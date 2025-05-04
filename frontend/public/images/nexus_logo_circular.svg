@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Circular Data Hub Concept -->
+  <rect width="400" height="400" fill="#FFFFFF" />
+  
+  <!-- Outer Circle -->
+  <circle cx="200" cy="200" r="140" fill="none" stroke="#0A2342" stroke-width="8" />
+  
+  <!-- Data Rays -->
+  <g stroke="#0A2342" stroke-width="4">
+    <line x1="200" y1="60" x2="200" y2="150" />
+    <line x1="60" y1="200" x2="150" y2="200" />
+    <line x1="200" y1="340" x2="200" y2="250" />
+    <line x1="340" y1="200" x2="250" y2="200" />
+  </g>
+  
+  <!-- Central N -->
+  <text x="200" y="230" text-anchor="middle"
+        font-family="Arial, sans-serif" font-size="120" fill="#0A2342" font-weight="bold">N</text>
+  
+  <!-- Tagline -->
+  <text x="200" y="300" text-anchor="middle"
+        font-family="Arial, sans-serif" font-size="14" fill="#4A5568" font-style="italic">
+    Where Data Converges, Insight Emerges
+  </text>
+</svg> 

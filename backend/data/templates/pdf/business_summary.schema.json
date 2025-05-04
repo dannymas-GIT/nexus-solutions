@@ -1,0 +1,72 @@
+{
+  "type": "object",
+  "properties": {
+    "business_name": {
+      "type": "string",
+      "description": "Name of the business"
+    },
+    "tagline": {
+      "type": "string",
+      "description": "Business tagline or slogan"
+    },
+    "business_description": {
+      "type": "string",
+      "description": "Detailed description of the business"
+    },
+    "contact_name": {
+      "type": "string",
+      "description": "Name of the primary contact person"
+    },
+    "contact_email": {
+      "type": "string",
+      "description": "Email address of the primary contact"
+    },
+    "contact_phone": {
+      "type": "string",
+      "description": "Phone number of the primary contact"
+    },
+    "target_market": {
+      "type": "string",
+      "description": "Description of the target market"
+    },
+    "market_size": {
+      "type": "string",
+      "description": "Estimated size of the market"
+    },
+    "market_growth": {
+      "type": "string",
+      "description": "Projected growth rate of the market"
+    },
+    "year1_revenue": {
+      "type": "string",
+      "description": "Projected revenue for year 1"
+    },
+    "year3_revenue": {
+      "type": "string",
+      "description": "Projected revenue for year 3"
+    },
+    "breakeven_timeline": {
+      "type": "string",
+      "description": "Estimated time to break even"
+    },
+    "initial_investment": {
+      "type": "string",
+      "description": "Required initial investment"
+    }
+  },
+  "required": [
+    "business_name",
+    "tagline",
+    "business_description",
+    "contact_name",
+    "contact_email",
+    "contact_phone",
+    "target_market",
+    "market_size",
+    "market_growth",
+    "year1_revenue",
+    "year3_revenue",
+    "breakeven_timeline",
+    "initial_investment"
+  ]
+} 

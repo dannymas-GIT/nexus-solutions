@@ -1,0 +1,161 @@
+{
+    "type": "object",
+    "properties": {
+        "business_name": {
+            "type": "string",
+            "description": "Name of the business"
+        },
+        "tagline": {
+            "type": "string",
+            "description": "Business tagline or slogan"
+        },
+        "business_description": {
+            "type": "string",
+            "description": "Brief description of the business (max 500 chars)"
+        },
+        "contact_name": {
+            "type": "string",
+            "description": "Primary contact name"
+        },
+        "contact_email": {
+            "type": "string",
+            "description": "Primary contact email",
+            "format": "email"
+        },
+        "contact_phone": {
+            "type": "string",
+            "description": "Primary contact phone number"
+        },
+        "target_market": {
+            "type": "string",
+            "description": "Description of the target market"
+        },
+        "customer_segments": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "List of primary customer segments"
+        },
+        "market_size": {
+            "type": "string",
+            "description": "Market size estimate in USD"
+        },
+        "market_growth": {
+            "type": "string",
+            "description": "Market growth rate as percentage"
+        },
+        "competitors": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "List of key competitors"
+        },
+        "products": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Product/service name"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Product/service description"
+                    },
+                    "price": {
+                        "type": "string",
+                        "description": "Price point"
+                    }
+                }
+            },
+            "description": "Products and services offered"
+        },
+        "usp": {
+            "type": "string",
+            "description": "Unique selling proposition"
+        },
+        "revenue_streams": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Revenue streams"
+        },
+        "year1_revenue": {
+            "type": "string",
+            "description": "First year revenue target"
+        },
+        "year3_revenue": {
+            "type": "string",
+            "description": "Three year revenue target"
+        },
+        "breakeven_timeline": {
+            "type": "string",
+            "description": "Projected break-even timeline"
+        },
+        "initial_investment": {
+            "type": "string",
+            "description": "Initial investment required"
+        },
+        "funding_strategy": {
+            "type": "string",
+            "description": "Funding strategy"
+        },
+        "key_team_members": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Team member name"
+                    },
+                    "role": {
+                        "type": "string",
+                        "description": "Team member role"
+                    },
+                    "experience": {
+                        "type": "string",
+                        "description": "Team member experience"
+                    }
+                }
+            },
+            "description": "Key team members"
+        },
+        "risks": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Top identified risks"
+        },
+        "milestones": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "description": {
+                        "type": "string",
+                        "description": "Milestone description"
+                    },
+                    "target_date": {
+                        "type": "string",
+                        "description": "Target date for the milestone"
+                    }
+                }
+            },
+            "description": "Key business milestones"
+        }
+    },
+    "required": [
+        "business_name",
+        "business_description",
+        "target_market",
+        "usp",
+        "year1_revenue",
+        "initial_investment"
+    ]
+} 

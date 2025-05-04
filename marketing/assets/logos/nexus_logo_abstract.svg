@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <!-- Background elements -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2c3e50" />
+      <stop offset="80%" stop-color="#3498db" />
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="20%" stop-color="#e74c3c" />
+      <stop offset="100%" stop-color="#f39c12" />
+    </linearGradient>
+    <linearGradient id="secondaryGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9b59b6" />
+      <stop offset="100%" stop-color="#2ecc71" />
+    </linearGradient>
+    <filter id="shadowFilter" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4" />
+      <feOffset dx="1" dy="1" result="offsetblur" />
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.2" />
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background Color -->
+  <rect width="400" height="400" fill="white" />
+  
+  <!-- Layered hexagons -->
+  <!-- Offset hexagon 1 -->
+  <polygon 
+    points="210,80 310,137 310,253 210,310 110,253 110,137" 
+    fill="url(#secondaryGradient)" 
+    opacity="0.3" 
+    transform="rotate(15, 200, 200)" />
+    
+  <!-- Offset hexagon 2 -->
+  <polygon 
+    points="210,80 310,137 310,253 210,310 110,253 110,137" 
+    fill="url(#accentGradient)" 
+    opacity="0.3" 
+    transform="rotate(-15, 200, 200)" />
+  
+  <!-- Main hexagon -->
+  <polygon 
+    points="200,80 300,137 300,253 200,310 100,253 100,137" 
+    fill="url(#bgGradient)" 
+    filter="url(#shadowFilter)" />
+  
+  <!-- Abstract representation of "N" using geometric shapes -->
+  <rect x="170" y="150" width="15" height="100" fill="white" />
+  <polygon points="185,150 200,150 250,230 250,150 265,150 265,250 250,250 200,170 200,250 185,250" fill="white" />
+  
+  <!-- Abstract data flow elements -->
+  <circle cx="200" cy="80" r="6" fill="white" />
+  <circle cx="300" cy="137" r="6" fill="white" />
+  <circle cx="300" cy="253" r="6" fill="white" />
+  <circle cx="200" cy="310" r="6" fill="white" />
+  <circle cx="100" cy="253" r="6" fill="white" />
+  <circle cx="100" cy="137" r="6" fill="white" />
+  
+  <!-- Connecting nodes with lines -->
+  <g stroke="white" stroke-width="1.5" opacity="0.7">
+    <line x1="200" y1="80" x2="170" y2="150" />
+    <line x1="300" y1="137" x2="265" y2="150" />
+    <line x1="300" y1="253" x2="265" y2="250" />
+    <line x1="200" y1="310" x2="185" y2="250" />
+    <line x1="100" y1="253" x2="185" y2="200" />
+    <line x1="100" y1="137" x2="170" y2="170" />
+  </g>
+</svg> 

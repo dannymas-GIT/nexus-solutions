@@ -1,0 +1,113 @@
+# Implementation Guide for Cursor Rules
+
+## Setup Process
+
+### 1. Create the Rules Directory
+
+First, create the `.cursor/rules` directory in your project root:
+
+```bash
+mkdir -p .cursor/rules
+```
+
+### 2. Add the Base Rules
+
+Save the "Base Developer Rules" template as your foundational rule:
+
+```bash
+# Create the base template file
+touch .cursor/rules/base-developer.mdc
+
+# Copy the content into this file
+```
+
+### 3. Add Technical Specialty Rules
+
+Save each technical specialty rule file:
+
+```bash
+# Copy each specialized rule to its own file
+touch .cursor/rules/frontend-developer.mdc
+touch .cursor/rules/backend-developer.mdc
+```
+
+### 4. Add Vertical-Specific Rules
+
+Save each vertical-specific rule file:
+
+```bash
+# Copy each vertical rule to its own file
+touch .cursor/rules/graphic-design.mdc
+touch .cursor/rules/presentation-creation.mdc
+touch .cursor/rules/marketing-advertising.mdc
+```
+
+### 5. Configure Cursor Settings
+
+1. Open Cursor IDE
+2. Go to Settings (⚙️ icon or Cmd/Ctrl+,)
+3. Navigate to General > Project Rules
+4. Verify that your rules are detected and enabled
+
+## How Cursor Rules Work Together
+
+The rules system in Cursor is designed to work modularly:
+
+1. **Base Rules**: Always applied to provide core development principles
+2. **Technical Rules**: Applied based on file types (e.g., `.py`, `.tsx`)
+3. **Vertical Rules**: Applied based on context and directories
+
+This layered approach means that when you're working on a Python file in the backend, you'll get both the base rules and backend-specific rules. When you switch to a design file, you'll get the base rules and design-specific rules.
+
+## Using the Rules
+
+### Automatic Rule Selection
+
+Cursor will automatically apply rules based on file patterns specified in the `globs` section:
+
+- Working on `.py` files → Backend rules apply
+- Working on `.tsx` or `.jsx` files → Frontend rules apply
+- Working on `.svg` or design files → Graphic design rules apply
+- Working on presentation files → Presentation rules apply
+- Working in marketing directories → Marketing rules apply
+
+### Manual Rule Generation
+
+You can also generate rules directly in a conversation using the `/Generate Cursor Rules` command after having a conversation that establishes preferences or patterns.
+
+## Customizing Your Rules
+
+### Transitioning from Your Existing System Prompt
+
+Your existing system prompt contained excellent content for full-stack development, which has been preserved and reorganized into the modular structure. The key differences are:
+
+1. **Format**: Converted to MDC format with metadata
+2. **Organization**: Split into specialized domains
+3. **Automation**: Added file pattern matching for auto-application
+
+### Adding New Domains or Technologies
+
+To extend your rules for additional domains:
+
+1. Create a new MDC file in `.cursor/rules/`
+2. Follow the structure of existing rule templates
+3. Define appropriate `globs` patterns
+4. Add domain-specific expertise and guidance
+
+### Including Project-Specific Files
+
+Use `@file` references to include important project files:
+
+```
+@file ../tsconfig.json
+@file ../tailwind.config.js
+@file ../brand-guidelines.pdf
+```
+
+## Best Practices for Maintaining Rules
+
+1. **Keep rules focused**: Each rule should have a clear purpose
+2. **Update regularly**: Revise rules as technologies and practices evolve
+3. **Test effectiveness**: Observe how the AI responds and refine rules
+4. **Share across projects**: Create a repository of your best rules
+5. **Use versioning**: Keep your rules in version control

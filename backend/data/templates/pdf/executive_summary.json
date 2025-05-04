@@ -1,0 +1,67 @@
+{
+    "sections": [
+        {
+            "type": "title",
+            "content": "Executive Summary - {{business_name}}"
+        },
+        {
+            "type": "paragraph",
+            "content": "Prepared by: {{contact_name}}"
+        },
+        {
+            "type": "heading",
+            "content": "Business Overview"
+        },
+        {
+            "type": "paragraph",
+            "content": "{{business_description}}"
+        },
+        {
+            "type": "subheading",
+            "content": "Unique Value Proposition"
+        },
+        {
+            "type": "paragraph",
+            "content": "{{usp}}"
+        },
+        {
+            "type": "heading",
+            "content": "Market Opportunity"
+        },
+        {
+            "type": "paragraph",
+            "content": "Target Market: {{target_market}}"
+        },
+        {
+            "type": "paragraph",
+            "content": "Market Size: {{market_size}}"
+        },
+        {
+            "type": "paragraph",
+            "content": "Growth Rate: {{market_growth}} per year"
+        },
+        {
+            "type": "heading",
+            "content": "Financial Highlights"
+        },
+        {
+            "type": "table",
+            "header": ["Metric", "Value"],
+            "rows": [
+                ["Initial Investment Required", "{{initial_investment}}"],
+                ["Year 1 Revenue Target", "{{year1_revenue}}"],
+                ["Year 3 Revenue Target", "{{year3_revenue}}"],
+                ["Break-even Timeline", "{{breakeven_timeline}}"],
+                ["Funding Strategy", "{{funding_strategy}}"]
+            ]
+        },
+        {
+            "type": "heading",
+            "content": "Contact Information"
+        },
+        {
+            "type": "paragraph",
+            "content": "For more information, please contact {{contact_name}} at {{contact_email}} or {{contact_phone}}."
+        }
+    ]
+} 

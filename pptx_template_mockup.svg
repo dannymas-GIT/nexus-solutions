@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540">
+  <!-- Slide background -->
+  <rect width="960" height="540" fill="white" />
+  
+  <!-- Header gradient -->
+  <defs>
+    <linearGradient id="headerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2c3e50" />
+      <stop offset="100%" stop-color="#3498db" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Header bar -->
+  <rect x="0" y="0" width="960" height="80" fill="url(#headerGradient)" />
+  
+  <!-- Logo in header -->
+  <g transform="translate(40, 20) scale(0.4)">
+    <!-- Logo hexagon -->
+    <polygon points="60,0 120,35 120,95 60,130 0,95 0,35" fill="white" />
+    <polygon points="60,20 100,45 100,85 60,110 20,85 20,45" fill="none" stroke="#3498db" stroke-width="3" />
+    <path d="M45,40 L45,90 L55,90 L75,55 L75,90 L85,90 L85,40 L75,40 L55,75 L55,40 Z" fill="#3498db" />
+  </g>
+  
+  <!-- Title -->
+  <text x="150" y="50" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="bold" fill="white">Data Convergence: Transforming Insights</text>
+  
+  <!-- Divider line -->
+  <line x1="40" y1="100" x2="920" y2="100" stroke="#ecf0f1" stroke-width="2" />
+  
+  <!-- Left column content -->
+  <g id="left-column">
+    <text x="60" y="140" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="bold" fill="#2c3e50">Key Benefits</text>
+    
+    <!-- Bullet points -->
+    <g font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#2c3e50">
+      <text x="80" y="180">• Unified Data Experience</text>
+      <text x="80" y="220">• Real-Time Intelligence</text>
+      <text x="80" y="260">• AI-Powered Analysis</text>
+      <text x="80" y="300">• Intuitive Visualization</text>
+      <text x="80" y="340">• Scalable Architecture</text>
+    </g>
+    
+    <!-- Call to action box -->
+    <rect x="60" y="380" width="320" height="80" rx="5" fill="#e74c3c" />
+    <text x="220" y="425" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="white">Schedule a Demo Today</text>
+  </g>
+  
+  <!-- Right column - Data visualization mockup -->
+  <g id="visualization">
+    <rect x="480" y="140" width="420" height="320" rx="5" fill="#ecf0f1" />
+    
+    <!-- Mockup chart -->
+    <line x1="520" y1="400" x2="520" y2="180" stroke="#2c3e50" stroke-width="2" />
+    <line x1="520" y1="400" x2="860" y2="400" stroke="#2c3e50" stroke-width="2" />
+    
+    <!-- Chart bars -->
+    <rect x="550" y="300" width="40" height="100" fill="#2c3e50" />
+    <rect x="610" y="250" width="40" height="150" fill="#3498db" />
+    <rect x="670" y="200" width="40" height="200" fill="#2ecc71" />
+    <rect x="730" y="320" width="40" height="80" fill="#f39c12" />
+    <rect x="790" y="220" width="40" height="180" fill="#e74c3c" />
+    
+    <!-- Chart labels -->
+    <text x="570" y="420" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" fill="#2c3e50">Q1</text>
+    <text x="630" y="420" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" fill="#2c3e50">Q2</text>
+    <text x="690" y="420" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" fill="#2c3e50">Q3</text>
+    <text x="750" y="420" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" fill="#2c3e50">Q4</text>
+    <text x="810" y="420" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" fill="#2c3e50">Q5</text>
+    
+    <!-- Chart title -->
+    <text x="690" y="160" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#2c3e50">Quarterly Performance Metrics</text>
+  </g>
+  
+  <!-- Footer -->
+  <rect x="0" y="500" width="960" height="40" fill="#2c3e50" />
+  <text x="40" y="525" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="white">Nexus Solutions - Where Data Converges, Insight Emerges</text>
+  <text x="920" y="525" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="end" fill="white">Slide 5</text>
+</svg> 

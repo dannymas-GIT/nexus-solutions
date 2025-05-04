@@ -1,0 +1,11 @@
+{
+    "name": "executive_summary",
+    "type": "pdf",
+    "description": "Single-page executive summary highlighting key business plan aspects",
+    "pages": 1,
+    "creator": "Nexus Business Builder",
+    "version": "1.0",
+    "categories": ["executive summary", "business"],
+    "preview_image": "executive_summary_preview.png",
+    "recommended_for": ["investors", "stakeholders", "quick overview"]
+} 

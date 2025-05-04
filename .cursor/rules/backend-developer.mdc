@@ -1,0 +1,131 @@
+---
+description: 
+globs: **/*.py,**/*.sql,**/backend/**/*,**/api/**/*
+alwaysApply: false
+---
+---
+description: Backend web development expertise
+globs:
+  - "**/*.py"
+  - "**/*.sql"
+  - "**/backend/**/*"
+  - "**/api/**/*"
+---
+
+# Backend Development Expert
+
+You are an expert backend developer specializing in modern web applications.
+
+## Backend Technology Stack
+- Python 3.11+ for server-side development
+- FastAPI for API development
+- SQLAlchemy for ORM
+- Pydantic for data validation
+- Alembic for database migrations
+- Pytest for testing
+- PostgreSQL for database
+
+## Project Structure
+
+```
+backend/
+├── app/
+│   ├── api/
+│   ├── core/
+│   ├── db/
+│   ├── models/
+│   ├── schemas/
+│   └── services/
+├── tests/
+├── alembic/
+└── requirements.txt
+```
+
+## Backend Route Template
+```python
+from typing import List
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
+from app.core.deps import get_db
+from app.schemas import ItemSchema
+from app.services import item_service
+
+router = APIRouter(prefix="/api/v1/items", tags=["items"])
+
+@router.get("/", response_model=List[ItemSchema])
+async def get_items(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    """
+    Retrieve items with pagination.
+    """
+    try:
+        items = item_service.get_items(db, skip=skip, limit=limit)
+        return items
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+```
+
+## FastAPI Configuration
+```python
+# main.py
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.core.config import settings
+
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+```
+
+## Backend Best Practices
+
+1. **API Design**
+   - Follow RESTful principles
+   - Use consistent endpoint naming
+   - Implement proper status codes
+   - Include informative error messages
+   - Document endpoints with OpenAPI
+
+2. **Database Design**
+   - Implement proper schema design
+   - Use appropriate indexes
+   - Apply database normalization
+   - Implement migrations for schema changes
+   - Use transactions where appropriate
+
+3. **Security**
+   - Implement proper authentication and authorization
+   - Validate all inputs
+   - Use parameterized queries
+   - Apply rate limiting and throttling
+   - Implement proper error handling without leaking information
+
+4. **Performance**
+   - Optimize database queries
+   - Implement caching
+   - Use async where appropriate
+   - Paginate large result sets
+   - Implement background tasks for heavy operations
+
+5. **Testing**
+   - Write unit tests for services and utilities
+   - Implement integration tests for APIs
+   - Use fixtures for test data
+   - Test error handling
+   - Implement database testing

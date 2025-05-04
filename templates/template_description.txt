@@ -1,0 +1,103 @@
+# Nexus Business Builder - Entrepreneur Information Collection Template
+
+This document describes the structure of the Word template (entrepreneur_info.docx) that will be used to collect information from entrepreneurs.
+
+## Template Structure
+
+1. **Cover Page**
+   - Title: "Nexus Business Builder"
+   - Subtitle: "Entrepreneur Information Form"
+   - Logo placeholder
+   - Date field: {{current_date}}
+
+2. **Business Concept & Contact Information**
+   - Business Name: {{business_name}}
+   - Tagline/Slogan: {{tagline}}
+   - Primary Industry: {{primary_industry}} [Dropdown list]
+   - Secondary Industries: {{secondary_industries}} [Multi-select]
+   - Brief Description (max 500 chars): {{business_description}}
+   - Primary Contact:
+     - Name: {{contact_name}}
+     - Email: {{contact_email}}
+     - Phone: {{contact_phone}}
+     - Role: {{contact_role}}
+
+3. **Founder Information**
+   - Table with rows for each founder:
+     - Name: {{founder_name}}
+     - Role: {{founder_role}}
+     - Experience (years): {{founder_experience}}
+     - Time Commitment: {{founder_commitment}} [Full-time/Part-time]
+     - Investment Amount: {{founder_investment}}
+     - Skills: {{founder_skills}} [Multi-select]
+
+4. **Market Information**
+   - Target Market Description: {{target_market}}
+   - Primary Customer Segments: {{customer_segments}}
+   - Geographical Focus: {{geographical_focus}} [Dropdown]
+   - Market Size Estimate (USD): {{market_size}} 
+   - Market Growth Rate (%): {{market_growth}}
+   - Known Competitors:
+     - Competitor 1: {{competitor_1}}
+     - Competitor 2: {{competitor_2}}
+     - Competitor 3: {{competitor_3}}
+
+5. **Product/Service Details**
+   - Product/Service Catalog:
+     - Name: {{product_name}}
+     - Description: {{product_description}}
+     - Price Point: {{product_price}}
+     - Cost to Produce: {{product_cost}}
+     - Development Status: {{product_status}} [Idea/Prototype/MVP/Live]
+   - Intellectual Property Status: {{ip_status}} [None/Pending/Registered]
+   - Unique Selling Proposition: {{usp}}
+
+6. **Business Model**
+   - Revenue Streams: {{revenue_streams}} [Multi-select]
+   - Sales Channels: {{sales_channels}} [Multi-select]
+   - Customer Acquisition Strategy: {{acquisition_strategy}}
+   - Customer Retention Strategy: {{retention_strategy}}
+   - Key Partnerships Required: {{key_partnerships}}
+
+7. **Financial Projections**
+   - Initial Investment Required: {{initial_investment}}
+   - Monthly Operating Costs: {{monthly_costs}}
+   - Projected Break-even Timeline: {{breakeven_timeline}}
+   - First Year Revenue Target: {{year1_revenue}}
+   - Three Year Revenue Target: {{year3_revenue}}
+   - Funding Strategy: {{funding_strategy}} [Self/Angel/VC/Bank/Crowdfunding]
+
+8. **Operational Requirements**
+   - Physical Location Needs: {{location_needs}}
+   - Technology Requirements: {{tech_requirements}}
+   - Staffing Plan:
+     - Initial Employees: {{initial_employees}}
+     - Key Positions: {{key_positions}}
+   - Equipment/Assets Needed: {{equipment_needs}}
+   - Supply Chain Requirements: {{supply_chain}}
+
+9. **Regulatory & Legal Considerations**
+   - Preferred Business Entity: {{business_entity}} [Dropdown]
+   - Known Regulatory Issues: {{regulatory_issues}}
+   - Licenses Required: {{licenses}}
+   - Insurance Needs: {{insurance_needs}}
+
+10. **Timeline & Goals**
+    - Ready to Launch Date: {{launch_date}}
+    - First Milestone: 
+      - Description: {{milestone1_desc}}
+      - Target Date: {{milestone1_date}}
+    - 1-Year Goals: {{year1_goals}}
+    - 3-Year Vision: {{year3_vision}}
+
+11. **Risk Assessment**
+    - Top 3 Identified Risks:
+      - Risk 1: {{risk1}}
+      - Risk 2: {{risk2}}
+      - Risk 3: {{risk3}}
+    - Risk Mitigation Strategies: {{risk_mitigation}}
+    - Contingency Plans: {{contingency_plans}}
+
+12. **Additional Information**
+    - Other Relevant Details: {{other_details}}
+    - Submission Date: {{submission_date}} 

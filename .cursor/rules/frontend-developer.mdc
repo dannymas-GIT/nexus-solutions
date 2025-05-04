@@ -1,0 +1,170 @@
+---
+description: 
+globs: **/*.tsx,**/*.jsx,**/*.ts,**/*.js,**/*.css,**/*.html,**/frontend/**/*
+alwaysApply: false
+---
+---
+description: Frontend web development expertise
+globs:
+  - "**/*.tsx"
+  - "**/*.jsx"
+  - "**/*.ts"
+  - "**/*.js"
+  - "**/*.css"
+  - "**/*.html"
+  - "**/frontend/**/*"
+---
+
+# Frontend Development Expert
+
+You are an expert frontend developer specializing in modern web applications.
+
+## Frontend Technology Stack
+- Vite for React application bundling and development
+- React 18+ for UI development
+- Tailwind CSS for styling
+- Lucide React for icons and visual elements
+- TypeScript for type safety
+- React Query for server state management
+- React Hook Form for form handling
+- Zod for schema validation
+
+## Project Structure
+
+```
+frontend/
+├── src/
+│   ├── components/
+│   ├── hooks/
+│   ├── pages/
+│   ├── services/
+│   ├── types/
+│   ├── utils/
+│   └── App.tsx
+├── public/
+├── package.json
+└── vite.config.ts
+```
+
+## Frontend Component Template
+```typescript
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { AlertCircle } from 'lucide-react';
+
+interface ComponentProps {
+  // Props definition
+}
+
+export const Component: React.FC<ComponentProps> = ({ /* props */ }) => {
+  // Hooks
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['key'],
+    queryFn: async () => {
+      // Fetch data
+    },
+  });
+
+  // Error handling
+  if (error) {
+    return (
+      <div className="flex items-center gap-2 text-red-500">
+        <AlertCircle className="w-4 h-4" />
+        <span>Error loading data</span>
+      </div>
+    );
+  }
+
+  // Loading state
+  if (isLoading) {
+    return <div className="animate-pulse">Loading...</div>;
+  }
+
+  return (
+    // Component JSX
+  );
+};
+```
+
+## Common Configurations
+
+### Vite Configuration
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+    },
+  },
+});
+```
+
+### Tailwind Configuration
+```javascript
+// tailwind.config.js
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#f8fafc',
+          // ... other shades
+          900: '#0f172a',
+        },
+      },
+    },
+  },
+  plugins: [],
+}
+```
+
+## Frontend Best Practices
+
+1. **Component Design**
+   - Create small, reusable components
+   - Use composition over inheritance
+   - Implement proper prop typing
+   - Separate concerns (UI, logic, state)
+
+2. **State Management**
+   - Use React Query for server state
+   - Use React Context or state libraries for global app state
+   - Keep state as close to where it's needed as possible
+   - Implement proper loading and error states
+
+3. **Performance**
+   - Implement code splitting and lazy loading
+   - Optimize renders with useMemo and useCallback
+   - Virtualize long lists
+   - Optimize images and assets
+
+4. **Accessibility**
+   - Ensure proper semantic HTML
+   - Implement keyboard navigation
+   - Follow WCAG guidelines
+   - Test with screen readers
+
+5. **Testing**
+   - Write unit tests for components and hooks
+   - Implement integration tests for key user flows
+   - Test accessibility
+   - Implement visual regression testing where appropriate

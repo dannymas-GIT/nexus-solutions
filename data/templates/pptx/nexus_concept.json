@@ -1,0 +1,195 @@
+{
+  "slides": [
+    {
+      "layout": "Title Slide",
+      "title": "Nexus Solutions",
+      "subtitle": "The Central Connection for All Your Data Needs",
+      "footer": "{{current_date}}"
+    },
+    {
+      "layout": "Title and Content",
+      "title": "Nexus Defined",
+      "content": [
+        {
+          "type": "text",
+          "value": "Nexus (noun): A connection or series of connections linking two or more things.\n\nA central or focal point."
+        },
+        {
+          "type": "text",
+          "value": "At Nexus Solutions, we connect all your data sources, creating a central point for data discovery, integration, and visualization."
+        }
+      ]
+    },
+    {
+      "layout": "Title and Content",
+      "title": "Business Overview",
+      "content": [
+        {
+          "type": "text",
+          "value": "{{business_name}} provides advanced data solutions for businesses and individuals with complex data needs."
+        },
+        {
+          "type": "bullet_list",
+          "value": [
+            "Industry-specific vertical solutions: [Vertical] Nexus",
+            "Customized integration of diverse data sources",
+            "Powerful visualization and analytics",
+            "Scalable architecture for businesses of all sizes",
+            "{{unique_value_proposition}}"
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "Two Content",
+      "title": "Our Value Proposition",
+      "left_content": [
+        {
+          "type": "bullet_list",
+          "value": [
+            "Single source of truth for all data",
+            "Streamlined data workflows",
+            "Reduced complexity",
+            "Real-time analytics",
+            "Data-driven decision making"
+          ]
+        }
+      ],
+      "right_content": [
+        {
+          "type": "image",
+          "path": "value_proposition.png"
+        }
+      ]
+    },
+    {
+      "layout": "Title and Content",
+      "title": "Data Integration",
+      "content": [
+        {
+          "type": "text",
+          "value": "Connect to any data source, anywhere."
+        },
+        {
+          "type": "bullet_list",
+          "value": [
+            "Cloud services (AWS, Azure, Google Cloud)",
+            "Databases (SQL, NoSQL, data warehouses)",
+            "APIs and web services",
+            "IoT devices and streams",
+            "Legacy systems and file formats"
+          ]
+        },
+        {
+          "type": "image",
+          "path": "data_integration.png"
+        }
+      ]
+    },
+    {
+      "layout": "Title and Content",
+      "title": "Visualization & Reporting",
+      "content": [
+        {
+          "type": "text",
+          "value": "Transform raw data into actionable insights."
+        },
+        {
+          "type": "bullet_list",
+          "value": [
+            "Interactive dashboards",
+            "Real-time data visualization",
+            "Custom reporting solutions",
+            "Predictive analytics",
+            "Data storytelling"
+          ]
+        },
+        {
+          "type": "image",
+          "path": "visualization.png"
+        }
+      ]
+    },
+    {
+      "layout": "Title and Content",
+      "title": "Financial Projections",
+      "content": [
+        {
+          "type": "table",
+          "value": [
+            ["Metric", "Year 1", "Year 3", "Year 5"],
+            ["Revenue", "{{year1_revenue}}", "{{year3_revenue}}", "{{year5_revenue}}"],
+            ["Customers", "{{year1_customers}}", "{{year3_customers}}", "{{year5_customers}}"],
+            ["Team Size", "{{year1_team_size}}", "{{year3_team_size}}", "{{year5_team_size}}"]
+          ]
+        },
+        {
+          "type": "text",
+          "value": "Initial Investment Required: {{initial_investment}}\nBreakeven Timeline: {{breakeven_timeline}}"
+        }
+      ]
+    },
+    {
+      "layout": "Title and Content",
+      "title": "Scaling Strategy",
+      "content": [
+        {
+          "type": "text",
+          "value": "How we'll grow with customer demand:"
+        },
+        {
+          "type": "bullet_list",
+          "value": [
+            "Modular architecture for easy scaling",
+            "Cloud-native infrastructure",
+            "Development team expansion: {{scaling_dev_team}}",
+            "Operations expansion: {{scaling_ops_team}}",
+            "Sales and marketing: {{scaling_sales_team}}"
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "Title and Content",
+      "title": "Development Environment",
+      "content": [
+        {
+          "type": "text",
+          "value": "Best practices for multi-developer environments:"
+        },
+        {
+          "type": "bullet_list",
+          "value": [
+            "Version control: Git with branching strategy",
+            "CI/CD pipelines for automated testing and deployment",
+            "Containerization for consistent environments",
+            "Infrastructure as code for reproducibility",
+            "Documentation and code standards"
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "Title and Content",
+      "title": "Next Steps",
+      "content": [
+        {
+          "type": "bullet_list",
+          "value": [
+            "Market research for initial vertical focus",
+            "MVP development: {{mvp_timeline}}",
+            "Early adopter program",
+            "Funding strategy: {{funding_strategy}}",
+            "Strategic partnerships"
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "Title Slide",
+      "title": "Thank You",
+      "subtitle": "{{business_name}} - {{tagline}}",
+      "footer": "Contact: {{contact_name}} | {{contact_email}} | {{contact_phone}}"
+    }
+  ]
+} 

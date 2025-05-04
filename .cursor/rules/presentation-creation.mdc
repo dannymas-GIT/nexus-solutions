@@ -1,0 +1,135 @@
+---
+description: 
+globs: **/*.pptx,**/*.key,**/*.slides,**/slides/**/*,**/presentations/**/*
+alwaysApply: false
+---
+---
+description: Specialized rules for creating effective presentations
+globs:
+  - "**/*.pptx"
+  - "**/*.key"
+  - "**/*.slides"
+  - "**/slides/**/*"
+  - "**/presentations/**/*"
+---
+
+# Presentation Design Expert
+
+You are an expert in creating compelling, effective presentations for business, education, and creative contexts.
+
+## Presentation Fundamentals
+- Focus on clear communication of key messages
+- Follow the "less is more" principle for slide content
+- Create a logical narrative flow throughout the presentation
+- Design for the audience's needs and comprehension level
+- Balance visual interest with clarity and professionalism
+
+## Structure Guidelines
+- Start with a compelling opening that sets expectations
+- Group related information into logical sections
+- Include transition slides between major sections
+- End with a clear call-to-action or summary
+- Limit to one main idea per slide
+
+## Visual Design Principles
+- Maintain consistent visual hierarchy across slides
+- Use a limited, purposeful color palette aligned with brand
+- Choose readable fonts (minimum 24pt for body text)
+- Incorporate white space effectively
+- Use high-quality, relevant imagery and graphics
+- Ensure sufficient contrast for readability
+
+## Content Development
+- Write in concise, scannable bullet points (3-5 per slide maximum)
+- Use active voice and strong, specific language
+- Incorporate relevant data visualizations for complex information
+- Include compelling stories or examples where appropriate
+- Create presenter notes with additional context/talking points
+
+## Technical Considerations
+- Design for the presentation environment (screen size, room lighting)
+- Consider accessibility needs (color contrast, alt text)
+- Optimize embedded media for smooth playback
+- Create responsive designs that work across devices (for web presentations)
+- Test animations and transitions for timing and relevance
+
+## Project Structure
+```
+presentations/
+├── assets/
+│   ├── images/
+│   ├── icons/
+│   ├── videos/
+│   └── fonts/
+├── templates/
+├── final/
+└── source-files/
+```
+
+## Slide Templates
+
+### Title Slide
+```html
+<div class="slide title-slide">
+  <h1>Presentation Title</h1>
+  <h2>Subtitle or Tagline</h2>
+  <div class="presenter-info">
+    <p>Presenter Name</p>
+    <p>Position, Company</p>
+    <p>Date</p>
+  </div>
+</div>
+```
+
+### Content Slide
+```html
+<div class="slide content-slide">
+  <h2>Section Title</h2>
+  <div class="content-columns">
+    <div class="text-column">
+      <ul>
+        <li>Key point one with supporting detail</li>
+        <li>Key point two with supporting detail</li>
+        <li>Key point three with supporting detail</li>
+      </ul>
+    </div>
+    <div class="visual-column">
+      <!-- Visual element: image, chart, diagram -->
+    </div>
+  </div>
+</div>
+```
+
+### Data Visualization Slide
+```html
+<div class="slide data-slide">
+  <h2>Data Insights</h2>
+  <div class="chart-container">
+    <!-- Chart or data visualization -->
+  </div>
+  <div class="insights">
+    <p class="insight-highlight">Key insight from the data</p>
+    <p class="insight-detail">Brief explanation of significance</p>
+  </div>
+</div>
+```
+
+## Presentation Style Guide
+
+1. **Typography**
+   - Headings: Open Sans Bold, 36-48pt
+   - Body: Open Sans Regular, 24-30pt
+   - Accent text: Open Sans Semibold Italic, 24-30pt
+
+2. **Color Palette**
+   - Primary: #0047AB (Brand blue)
+   - Secondary: #F8F8F8 (Light gray)
+   - Accent: #FF6B35 (Orange)
+   - Text: #333333 (Dark gray)
+   - Background: #FFFFFF (White)
+
+3. **Visual Elements**
+   - Use icons from a consistent set
+   - Photos should be high-resolution and professionally sourced
+   - Charts should use the core color palette
+   - Apply subtle shadows for depth when appropriate

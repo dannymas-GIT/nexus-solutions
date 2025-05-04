@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Solutions - Business Plan</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --info: #3498db;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        header {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo {
+            width: 60px;
+            height: 60px;
+            position: relative;
+            margin-right: 1rem;
+        }
+        
+        .hexagon {
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .inner-hexagon {
+            width: 70%;
+            height: 70%;
+            background-color: transparent;
+            border: 2px solid var(--secondary);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .n-letter {
+            color: var(--secondary);
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        
+        .header-title h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        
+        .header-title p {
+            margin: 0.5rem 0 0;
+            font-style: italic;
+            opacity: 0.9;
+        }
+        
+        .date-display {
+            text-align: right;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        main {
+            padding: 2rem;
+            max-height: 80vh; /* Limit height to 80% of viewport height */
+            overflow-y: auto; /* Add vertical scrollbar if content overflows */
+        }
+        
+        .section {
+            margin-bottom: 2rem;
+        }
+        
+        h2 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+        }
+        
+        h3 {
+            color: var(--primary);
+            margin-top: 1.5rem;
+        }
+        
+        .summary-box {
+            background-color: var(--light);
+            padding: 1.5rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        th {
+            background-color: var(--primary);
+            color: white;
+            text-align: left;
+            padding: 0.75rem;
+            font-weight: bold;
+        }
+        
+        td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--light);
+        }
+        
+        tr:nth-child(even) {
+            background-color: var(--light);
+        }
+        
+        .chart-container {
+            background-color: #f8f8f8;
+            border: 1px solid var(--light);
+            border-radius: 5px;
+            padding: 1rem;
+            margin: 1rem 0;
+            height: 300px;
+            position: relative;
+        }
+        
+        .chart-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--primary);
+            opacity: 0.7;
+        }
+        
+        .cta-box {
+            background-color: var(--accent);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            border-radius: 5px;
+            margin: 2rem 0;
+        }
+        
+        .cta-box h3 {
+            color: white;
+            margin-top: 0;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background-color: white;
+            color: var(--accent);
+            padding: 0.75rem 2rem;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 3px;
+            margin-top: 1rem;
+        }
+        
+        footer {
+            background-color: var(--primary);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .date-display {
+                text-align: left;
+                margin-top: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <div class="logo">
+                    <div class="hexagon">
+                        <div class="inner-hexagon">
+                            <span class="n-letter">N</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-title">
+                    <h1>Business Plan</h1>
+                    <p>{{business_name}}</p>
+                </div>
+            </div>
+            <div class="date-display">
+                <p>{{current_date}}</p>
+            </div>
+        </header>
+        
+        <main>
+            <section class="section">
+                <h2>1. Executive Summary</h2>
+                <div class="summary-box">
+                    <p>{{executive_summary}}</p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam ac vestibulum urna, at finibus massa. Vestibulum fringilla auctor risus sit amet tempus.</p>
+                    <p>Donec tincidunt eros sed felis semper, vel venenatis arcu placerat. Vivamus laoreet vehicula odio, vel finibus nisl convallis vel.</p>
+                </div>
+            </section>
+            
+            <section class="section">
+                <h2>2. Business Concept</h2>
+                <h3>2.1 Business Description</h3>
+                <p>{{business_description}}</p>
+                <p>Morbi convallis bibendum urna ut viverra. Maecenas quis consequat libero, a feugiat eros. Nunc ut lacinia tortor, et interdum justo.</p>
+                <p>Curabitur gravida felis enim, eu condimentum massa lobortis non. Vivamus aliquam metus in justo faucibus, et molestie mauris auctor.</p>
+            </section>
+            
+            <section class="section">
+                <h2>3. Market Analysis</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Value</th>
+                            <th>Trend</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Market Size</td>
+                            <td>{{market_size}}</td>
+                            <td>↑ Growing</td>
+                        </tr>
+                        <tr>
+                            <td>Target Segments</td>
+                            <td>{{target_segments}}</td>
+                            <td>→ Stable</td>
+                        </tr>
+                        <tr>
+                            <td>Competitors</td>
+                            <td>{{competitors}}</td>
+                            <td>↑ Increasing</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>3.1 Revenue Projections</h3>
+                <div class="chart-container">
+                    <div class="chart-placeholder">
+                        <p>[Interactive Chart: Revenue Projections over 5 Years]</p>
+                    </div>
+                </div>
+            </section>
+            
+            <div class="cta-box">
+                <h3>Ready to move forward with your business plan?</h3>
+                <p>Schedule a consultation with our business development team to refine your strategy.</p>
+                <a href="#" class="cta-button">Schedule Consultation</a>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Nexus Solutions - Where Data Converges, Insight Emerges</p>
+            <p>CONFIDENTIAL | ©2025 Nexus Solutions, Inc.</p>
+        </footer>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <!-- Background elements -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2c3e50" />
+      <stop offset="100%" stop-color="#3498db" />
+    </linearGradient>
+    <filter id="shadowFilter" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="5" />
+      <feOffset dx="0" dy="2" result="offsetblur" />
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3" />
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background Color -->
+  <rect width="400" height="400" fill="white" />
+  
+  <!-- Main circle -->
+  <circle cx="200" cy="200" r="150" fill="url(#bgGradient)" filter="url(#shadowFilter)" />
+  
+  <!-- Inner hexagon (Nexus symbol) -->
+  <polygon 
+    points="200,100 260,130 260,270 200,300 140,270 140,130" 
+    fill="none" 
+    stroke="white" 
+    stroke-width="4" />
+
+  <!-- "N" stylized - bold version -->
+  <path 
+    d="M175,150 L175,250 L195,250 L225,190 L225,250 L245,250 L245,150 L225,150 L195,210 L195,150 Z" 
+    fill="white" 
+    stroke="white" 
+    stroke-width="2" />
+    
+  <!-- Six small data points around the circle edge representing connectivity -->
+  <circle cx="200" cy="50" r="8" fill="#e74c3c" />
+  <circle cx="350" cy="200" r="8" fill="#2ecc71" />
+  <circle cx="200" cy="350" r="8" fill="#f39c12" />
+  <circle cx="50" cy="200" r="8" fill="#9b59b6" />
+  <circle cx="315" cy="85" r="8" fill="#1abc9c" />
+  <circle cx="85" cy="315" r="8" fill="#e67e22" />
+  
+  <!-- Subtle connection lines -->
+  <line x1="200" y1="50" x2="200" y2="100" stroke="white" stroke-width="1.5" opacity="0.6" />
+  <line x1="350" y1="200" x2="260" y2="200" stroke="white" stroke-width="1.5" opacity="0.6" />
+  <line x1="200" y1="350" x2="200" y2="300" stroke="white" stroke-width="1.5" opacity="0.6" />
+  <line x1="50" y1="200" x2="140" y2="200" stroke="white" stroke-width="1.5" opacity="0.6" />
+  <line x1="315" y1="85" x2="255" y2="140" stroke="white" stroke-width="1.5" opacity="0.6" />
+  <line x1="85" y1="315" x2="145" y2="260" stroke="white" stroke-width="1.5" opacity="0.6" />
+</svg> 

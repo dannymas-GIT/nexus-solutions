@@ -1,0 +1,11 @@
+{
+    "name": "business_plan",
+    "type": "docx",
+    "description": "Complete business plan document with executive summary, market analysis, and financial projections",
+    "pages": 8,
+    "creator": "Nexus Business Builder",
+    "version": "1.0",
+    "categories": ["business", "marketing", "finance"],
+    "preview_image": "business_plan_preview.png",
+    "recommended_for": ["startup", "small business", "detailed plan"]
+} 

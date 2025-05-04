@@ -1,0 +1,51 @@
+{
+  "sections": [
+    {
+      "type": "title",
+      "content": "Business Plan Summary for {{business_name}}"
+    },
+    {
+      "type": "heading",
+      "content": "{{business_name}}: {{tagline}}"
+    },
+    {
+      "type": "paragraph",
+      "content": "{{business_description}}"
+    },
+    {
+      "type": "subheading",
+      "content": "Contact Information"
+    },
+    {
+      "type": "paragraph",
+      "content": "Name: {{contact_name}}\nEmail: {{contact_email}}\nPhone: {{contact_phone}}"
+    },
+    {
+      "type": "subheading",
+      "content": "Market Overview"
+    },
+    {
+      "type": "table",
+      "header": ["Metric", "Value"],
+      "rows": [
+        ["Target Market", "{{target_market}}"],
+        ["Market Size", "{{market_size}}"],
+        ["Market Growth", "{{market_growth}}"]
+      ]
+    },
+    {
+      "type": "subheading",
+      "content": "Financial Projections"
+    },
+    {
+      "type": "table",
+      "header": ["Metric", "Value"],
+      "rows": [
+        ["Year 1 Revenue", "{{year1_revenue}}"],
+        ["Year 3 Revenue", "{{year3_revenue}}"],
+        ["Breakeven Timeline", "{{breakeven_timeline}}"],
+        ["Initial Investment", "{{initial_investment}}"]
+      ]
+    }
+  ]
+} 

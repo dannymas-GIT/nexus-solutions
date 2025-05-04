@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <!-- Background elements -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2c3e50" />
+      <stop offset="100%" stop-color="#3498db" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Color -->
+  <rect width="400" height="400" fill="white" />
+  
+  <!-- Main hexagon (simplified) -->
+  <polygon 
+    points="200,100 300,166.6 300,300 200,366.6 100,300 100,166.6" 
+    fill="url(#bgGradient)" />
+
+  <!-- "N" stylized - simplified -->
+  <path 
+    d="M160,150 L160,250 L180,250 L240,170 L240,250 L260,250 L260,150 L240,150 L180,230 L180,150 Z" 
+    fill="white" />
+    
+  <!-- Three simple dots representing data points -->
+  <circle cx="200" cy="100" r="5" fill="white" />
+  <circle cx="300" cy="166.6" r="5" fill="white" />
+  <circle cx="100" cy="166.6" r="5" fill="white" />
+</svg> 

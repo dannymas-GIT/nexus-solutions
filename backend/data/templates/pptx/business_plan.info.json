@@ -1,0 +1,11 @@
+{
+    "name": "business_plan",
+    "type": "pptx",
+    "description": "Complete business plan presentation with executive summary, market analysis, and financial projections",
+    "slides": 10,
+    "creator": "Nexus Business Builder",
+    "version": "1.0",
+    "categories": ["business", "marketing", "finance"],
+    "preview_image": "business_plan_preview.png",
+    "recommended_for": ["startup", "small business", "pitch deck"]
+} 

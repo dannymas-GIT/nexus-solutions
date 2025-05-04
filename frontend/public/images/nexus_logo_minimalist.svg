@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Minimalist Hexagon Concept -->
+  <rect width="400" height="400" fill="#FFFFFF" />
+  
+  <!-- Hexagon Outline -->
+  <polygon points="200,80 300,160 300,240 200,320 100,240 100,160"
+           fill="none" stroke="#0A2342" stroke-width="8" />
+  
+  <!-- Upright N -->
+  <text x="200" y="260" text-anchor="middle"
+        font-family="Arial, sans-serif" font-size="120" fill="#0A2342" font-weight="bold">N</text>
+  
+  <!-- Tagline -->
+  <text x="200" y="300" text-anchor="middle"
+        font-family="Arial, sans-serif" font-size="14" fill="#4A5568" font-style="italic">
+    Where Data Converges, Insight Emerges
+  </text>
+</svg> 

@@ -1,0 +1,9 @@
+{
+  "name": "business_summary",
+  "type": "pdf",
+  "description": "A one-page business plan summary with key information and metrics.",
+  "pages": 1,
+  "author": "Nexus Business Builder",
+  "category": "business_planning",
+  "tags": ["business plan", "summary", "financial projections", "market overview"]
+} 

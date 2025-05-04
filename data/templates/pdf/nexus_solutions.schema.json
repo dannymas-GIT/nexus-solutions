@@ -1,0 +1,117 @@
+{
+  "type": "object",
+  "properties": {
+    "business_name": {
+      "type": "string",
+      "description": "Name of the business"
+    },
+    "current_date": {
+      "type": "string",
+      "description": "Current date for the document"
+    },
+    "unique_value_proposition": {
+      "type": "string",
+      "description": "What makes Nexus uniquely valuable"
+    },
+    "year1_revenue": {
+      "type": "string",
+      "description": "Projected revenue for year 1"
+    },
+    "year3_revenue": {
+      "type": "string",
+      "description": "Projected revenue for year 3"
+    },
+    "year5_revenue": {
+      "type": "string",
+      "description": "Projected revenue for year 5"
+    },
+    "year1_customers": {
+      "type": "string",
+      "description": "Projected number of customers in year 1"
+    },
+    "year3_customers": {
+      "type": "string",
+      "description": "Projected number of customers in year 3"
+    },
+    "year5_customers": {
+      "type": "string",
+      "description": "Projected number of customers in year 5"
+    },
+    "year1_team_size": {
+      "type": "string",
+      "description": "Projected team size in year 1"
+    },
+    "year3_team_size": {
+      "type": "string",
+      "description": "Projected team size in year 3"
+    },
+    "year5_team_size": {
+      "type": "string",
+      "description": "Projected team size in year 5"
+    },
+    "initial_investment": {
+      "type": "string",
+      "description": "Required initial investment"
+    },
+    "breakeven_timeline": {
+      "type": "string",
+      "description": "Estimated time to break even"
+    },
+    "scaling_dev_team": {
+      "type": "string",
+      "description": "Strategy for scaling the development team"
+    },
+    "scaling_ops_team": {
+      "type": "string",
+      "description": "Strategy for scaling the operations team"
+    },
+    "scaling_sales_team": {
+      "type": "string",
+      "description": "Strategy for scaling the sales team"
+    },
+    "mvp_timeline": {
+      "type": "string",
+      "description": "Timeline for MVP development"
+    },
+    "funding_strategy": {
+      "type": "string",
+      "description": "Strategy for securing funding"
+    },
+    "contact_name": {
+      "type": "string",
+      "description": "Name of the primary contact person"
+    },
+    "contact_email": {
+      "type": "string",
+      "description": "Email address of the primary contact"
+    },
+    "contact_phone": {
+      "type": "string",
+      "description": "Phone number of the primary contact"
+    }
+  },
+  "required": [
+    "business_name",
+    "current_date",
+    "unique_value_proposition",
+    "year1_revenue",
+    "year3_revenue",
+    "year5_revenue",
+    "year1_customers",
+    "year3_customers", 
+    "year5_customers",
+    "year1_team_size",
+    "year3_team_size",
+    "year5_team_size",
+    "initial_investment",
+    "breakeven_timeline",
+    "scaling_dev_team",
+    "scaling_ops_team",
+    "scaling_sales_team",
+    "mvp_timeline",
+    "funding_strategy",
+    "contact_name",
+    "contact_email",
+    "contact_phone"
+  ]
+} 

@@ -1,0 +1,12 @@
+{
+  "name": "nexus_concept",
+  "type": "pptx",
+  "description": "A comprehensive presentation template for the Nexus data solutions business concept.",
+  "slides": 11,
+  "author": "Nexus Business Builder",
+  "category": "business_concept",
+  "tags": ["data solutions", "business plan", "nexus", "technology", "visualization"],
+  "intended_audience": ["investors", "stakeholders", "team members", "clients"],
+  "version": "1.0",
+  "created_date": "2025-04-26"
+} 

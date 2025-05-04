@@ -1,0 +1,24 @@
+# Azure AD App Registration for NexusBusinessAgent
+AZURE_TENANT_ID=8fe97a37-6956-4bc2-8253-f97f816bc733
+AZURE_CLIENT_ID=4bc94816-f1d4-4cff-8bf7-e4efb061d662
+
+# Certificate details (locally stored)
+CERT_PATH=/opt/projects/NexusBusinessBuilder/certificates/NexusBusinessAgent.pfx
+CERT_PASSWORD=NexusAgent123
+
+# Microsoft Graph API endpoints
+GRAPH_API_VERSION=v1.0
+
+# Storage configuration
+# Options: onedrive, sharepoint, local
+STORAGE_PROVIDER=onedrive
+
+# SharePoint settings (if using SharePoint storage)
+# SHAREPOINT_SITE_NAME=your_site_name
+# SHAREPOINT_DOCUMENT_LIBRARY=documents
+
+# OneDrive settings (if using OneDrive storage)
+ONEDRIVE_ROOT_FOLDER=NexusBusinessPlan
+
+# Local storage settings (if using local storage)
+LOCAL_STORAGE_PATH=/opt/projects/NexusBusinessBuilder/output 

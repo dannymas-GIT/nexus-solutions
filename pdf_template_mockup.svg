@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 612 792" width="612" height="792">
+  <!-- PDF page (US Letter size) -->
+  <rect width="612" height="792" fill="white" />
+  
+  <!-- Header with gradient -->
+  <defs>
+    <linearGradient id="headerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2c3e50" />
+      <stop offset="100%" stop-color="#3498db" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Header -->
+  <rect x="0" y="0" width="612" height="120" fill="url(#headerGradient)" />
+  
+  <!-- Logo in header -->
+  <g transform="translate(40, 30) scale(0.4)">
+    <!-- Logo hexagon -->
+    <polygon points="60,0 120,35 120,95 60,130 0,95 0,35" fill="white" />
+    <polygon points="60,20 100,45 100,85 60,110 20,85 20,45" fill="none" stroke="#3498db" stroke-width="3" />
+    <path d="M45,40 L45,90 L55,90 L75,55 L75,90 L85,90 L85,40 L75,40 L55,75 L55,40 Z" fill="#3498db" />
+  </g>
+  
+  <!-- Title -->
+  <text x="180" y="60" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="bold" fill="white">Business Plan</text>
+  <text x="180" y="90" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="white">{{business_name}}</text>
+  
+  <!-- Date -->
+  <text x="560" y="60" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="end" fill="white">{{current_date}}</text>
+  
+  <!-- Document body -->
+  <g font-family="Arial, Helvetica, sans-serif" fill="#2c3e50">
+    <!-- Section 1: Executive Summary -->
+    <text x="40" y="160" font-size="20" font-weight="bold">1. Executive Summary</text>
+    <line x1="40" y1="170" x2="572" y2="170" stroke="#3498db" stroke-width="2" />
+    
+    <rect x="40" y="180" width="532" height="80" fill="#ecf0f1" rx="4" />
+    <text x="50" y="200" font-size="14" width="512">{{executive_summary}}</text>
+    <text x="50" y="220" font-size="14">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam ac vestibulum urna, at finibus massa. Vestibulum fringilla auctor risus sit amet tempus.</text>
+    <text x="50" y="240" font-size="14">Donec tincidunt eros sed felis semper, vel venenatis arcu placerat. Vivamus laoreet vehicula odio, vel finibus nisl convallis vel.</text>
+    
+    <!-- Section 2: Business Concept -->
+    <text x="40" y="290" font-size="20" font-weight="bold">2. Business Concept</text>
+    <line x1="40" y1="300" x2="572" y2="300" stroke="#3498db" stroke-width="2" />
+    
+    <text x="40" y="320" font-size="16" font-weight="bold">2.1 Business Description</text>
+    <text x="40" y="340" font-size="14">{{business_description}}</text>
+    <text x="40" y="360" font-size="14">Morbi convallis bibendum urna ut viverra. Maecenas quis consequat libero, a feugiat eros. Nunc ut lacinia tortor, et interdum justo.</text>
+    <text x="40" y="380" font-size="14">Curabitur gravida felis enim, eu condimentum massa lobortis non. Vivamus aliquam metus in justo faucibus, et molestie mauris auctor.</text>
+    
+    <!-- Section 3: Market Analysis -->
+    <text x="40" y="420" font-size="20" font-weight="bold">3. Market Analysis</text>
+    <line x1="40" y1="430" x2="572" y2="430" stroke="#3498db" stroke-width="2" />
+    
+    <!-- Market Analysis Table -->
+    <rect x="40" y="450" width="532" height="30" fill="#2c3e50" rx="4" />
+    <text x="50" y="470" font-size="14" fill="white" font-weight="bold">Metric</text>
+    <text x="300" y="470" font-size="14" fill="white" font-weight="bold">Value</text>
+    <text x="450" y="470" font-size="14" fill="white" font-weight="bold">Trend</text>
+    
+    <rect x="40" y="480" width="532" height="30" fill="#ecf0f1" rx="0" />
+    <text x="50" y="500" font-size="14">Market Size</text>
+    <text x="300" y="500" font-size="14">{{market_size}}</text>
+    <text x="450" y="500" font-size="14">↑ Growing</text>
+    
+    <rect x="40" y="510" width="532" height="30" fill="white" rx="0" stroke="#ecf0f1" stroke-width="1" />
+    <text x="50" y="530" font-size="14">Target Segments</text>
+    <text x="300" y="530" font-size="14">{{target_segments}}</text>
+    <text x="450" y="530" font-size="14">→ Stable</text>
+    
+    <rect x="40" y="540" width="532" height="30" fill="#ecf0f1" rx="0" />
+    <text x="50" y="560" font-size="14">Competitors</text>
+    <text x="300" y="560" font-size="14">{{competitors}}</text>
+    <text x="450" y="560" font-size="14">↑ Increasing</text>
+    
+    <!-- Chart/Graph Example -->
+    <text x="40" y="600" font-size="16" font-weight="bold">3.1 Revenue Projections</text>
+    <rect x="40" y="610" width="532" height="120" fill="#f8f8f8" stroke="#ecf0f1" stroke-width="1" rx="4" />
+    
+    <!-- Line chart -->
+    <line x1="60" y1="700" x2="550" y2="700" stroke="#2c3e50" stroke-width="2" />
+    <line x1="60" y1="700" x2="60" y2="620" stroke="#2c3e50" stroke-width="2" />
+    
+    <!-- Chart lines -->
+    <polyline points="60,680 140,670 220,650 300,620 380,600 460,610 540,590" 
+              fill="none" stroke="#3498db" stroke-width="3" />
+    <polyline points="60,680 140,685 220,675 300,660 380,650 460,630 540,620" 
+              fill="none" stroke="#e74c3c" stroke-width="3" />
+    
+    <!-- Legend -->
+    <rect x="400" y="630" width="12" height="12" fill="#3498db" />
+    <text x="420" y="640" font-size="12">Projected Revenue</text>
+    <rect x="400" y="650" width="12" height="12" fill="#e74c3c" />
+    <text x="420" y="660" font-size="12">Actual Revenue</text>
+  </g>
+  
+  <!-- Footer -->
+  <rect x="0" y="750" width="612" height="42" fill="#2c3e50" />
+  <text x="306" y="775" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="middle" fill="white">Nexus Solutions - Where Data Converges, Insight Emerges</text>
+  <text x="40" y="775" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="white">CONFIDENTIAL</text>
+  <text x="572" y="775" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="white">Page 1</text>
+</svg> 
