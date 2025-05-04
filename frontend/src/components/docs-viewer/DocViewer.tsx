@@ -17,146 +17,6 @@ interface DocViewerProps {
   fileType: DocType;
 }
 
-// Mock content for different document types
-const mockContent: Record<string, string> = {
-  'value_proposition': `# Nexus Solutions: Where Data Converges, Insight Emerges
-
-## Transforming Business Intelligence
-
-At Nexus Solutions, we provide a central hub for all your data, enabling you to:
-
-- **Connect disparate data sources** into a unified view
-- **Automate analytics** with intelligent algorithms
-- **Visualize insights** through intuitive dashboards
-- **Make decisions faster** with real-time data processing
-
-## Key Benefits
-
-| Benefit | Description |
-|---------|-------------|
-| Increased Efficiency | Reduce analysis time by 75% |
-| Cost Reduction | Lower data management costs by 40% |
-| Enhanced Decision Making | Improve decision accuracy by 65% |
-| Competitive Advantage | Stay ahead with predictive analytics |
-
-[Contact us today](#) to learn how Nexus can transform your business data landscape.`,
-
-  'product_datasheet': `# Nexus Platform Technical Specifications
-
-## System Architecture
-
-The Nexus Platform utilizes a cloud-native, microservices architecture designed for scalability and resilience:
-
-\`\`\`typescript
-interface NexusArchitecture {
-  frontend: {
-    framework: 'React';
-    stateManagement: 'Redux';
-    ui: 'MaterialUI';
-  };
-  backend: {
-    runtime: 'Node.js';
-    api: 'GraphQL';
-    authentication: 'OAuth2/JWT';
-  };
-  dataProcessing: {
-    engines: ['Apache Spark', 'TensorFlow'];
-    storage: ['S3', 'MongoDB', 'PostgreSQL'];
-  };
-}
-\`\`\`
-
-## Performance Metrics
-
-- **Data Processing Speed**: 1TB/hour
-- **Concurrent Users**: 10,000+
-- **API Response Time**: <100ms
-- **Availability**: 99.99% uptime
-
-## Security Features
-
-1. End-to-end encryption
-2. Role-based access control
-3. Compliance with GDPR, HIPAA, and SOC2
-4. Regular security audits and penetration testing`,
-
-  'case_study': `# Case Study: Global Financial Services Firm
-
-## Client Profile
-A Fortune 500 financial services company with operations in 35 countries needed to consolidate data from 48 different systems to improve customer insights and regulatory compliance.
-
-## Challenge
-- Disparate legacy systems with incompatible data formats
-- Regulatory requirements necessitating data lineage tracking
-- 300+ TB of historical data requiring migration
-- Real-time analytics needs for fraud detection
-
-## Solution
-Nexus Solutions implemented our flagship data convergence platform with:
-
-1. Custom API integrations for legacy systems
-2. Automated data quality validation pipelines
-3. Blockchain-based data lineage tracking
-4. Distributed computing framework for real-time analytics
-
-## Results
-
-![Results Chart](https://example.com/results-chart.png)
-
-- **87% reduction** in data preparation time
-- **$4.2M annual savings** in operational costs
-- **99.97% accuracy** in regulatory reporting
-- **3x faster** fraud detection capabilities`,
-
-  'white_paper': `# White Paper: The Future of Data Convergence
-
-## Abstract
-This paper examines the emerging paradigm of data convergence and its implications for enterprise intelligence. We propose a framework for implementing unified data architectures that balance flexibility, security, and performance.
-
-## 1. Introduction
-
-The exponential growth of data sources has created both opportunities and challenges for organizations. As Gartner notes, "By 2025, 80% of enterprises will shut down their traditional data centers." This shift necessitates new approaches to data management.
-
-## 2. The Convergence Imperative
-
-Data convergence represents more than consolidation; it enables:
-
-- Cross-domain insights
-- Reduced data redundancy
-- Enhanced governance
-- Accelerated innovation
-
-## 3. Technical Approaches
-
-### 3.1 Data Mesh Architecture
-
-\`\`\`
-Domain-driven ownership + self-serve infrastructure + federated governance = Data Mesh
-\`\`\`
-
-### 3.2 Data Fabric Implementation
-
-A data fabric provides a unified environment through:
-
-- Metadata-driven integration
-- AI-powered data discovery
-- Automated policy enforcement
-- Dynamic data virtualization
-
-## 4. Conclusion
-
-Organizations that successfully implement data convergence strategies will gain significant competitive advantages in analytics capabilities, operational efficiency, and innovation capacity.
-
-## References
-
-1. Smith, J. (2023). "Enterprise Data Architecture: Patterns for Success"
-2. Kim, L. et al. (2024). "Quantifying ROI of Data Integration Initiatives"
-3. Gartner Research. (2022). "Future of Enterprise Data Centers"`,
-
-  'business_plan': `# Placeholder for Business Plan Content`,
-  'investor_deck': `# Placeholder for Investor Deck Content`,
-};
-
 // Mock image gallery data
 const mockImageGallery = [
   {
@@ -186,21 +46,13 @@ const mockImageGallery = [
 ];
 
 // Mock PDF file paths
-const mockPdfFiles: Record<string, string> = {
-  'business_plan': '/sample-pdfs/business_plan.pdf',
-  'investor_deck': '/sample-pdfs/investor_deck.pdf',
-};
+// const mockPdfFiles: Record<string, string> = { ... };
 
 // Mock PPTX file paths
-const mockPptxFiles: Record<string, string> = {
-  'presentation': '/sample-pptx/presentation.pptx',
-};
+// const mockPptxFiles: Record<string, string> = { ... };
 
 // Mock DOCX file paths
-const mockDocxFiles: Record<string, string> = {
-  'product_overview': '/sample-docx/product_overview.docx',
-  'user_guide': '/sample-docx/user_guide.docx',
-};
+// const mockDocxFiles: Record<string, string> = { ... };
 
 const DocViewer: React.FC<DocViewerProps> = ({ filePath, fileType }) => {
   const [content, setContent] = useState<string>('');

@@ -7,12 +7,7 @@ import {
   Search,
   Bell,
   User,
-  MessageSquare,
   HelpCircle,
-  Settings,
-  Users,
-  BookOpen,
-  Link as LinkIcon
 } from 'lucide-react';
 
 interface NavItem {
@@ -27,7 +22,6 @@ interface NavItem {
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const location = useLocation();
 
@@ -128,20 +122,6 @@ const Navbar: React.FC = () => {
       ]
     }
   ];
-
-  // Listen for scroll events to change navbar appearance
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // Handle dropdown menu toggle
   const toggleDropdown = (label: string) => {

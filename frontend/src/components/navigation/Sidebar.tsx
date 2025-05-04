@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  FileText, 
-  LayoutDashboard, 
-  Settings, 
-  ChevronLeft, 
+import {
+  // FileText, // Unused
+  // LayoutDashboard, // Unused
+  Settings,
+  ChevronLeft,
   LogOut,
   Search,
   ChevronRight,
@@ -31,7 +31,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({
     'images-graphics': true
   });
@@ -49,24 +48,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       path: '/command-center',
     },
   ];
-
-  // Detect dark mode
-  useEffect(() => {
-    // Check system preference
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setIsDarkMode(prefersDark);
-    
-    // Listen for changes in system preference
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
-      setIsDarkMode(e.matches);
-    };
-    
-    mediaQuery.addEventListener('change', handleChange);
-    return () => {
-      mediaQuery.removeEventListener('change', handleChange);
-    };
-  }, []);
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => ({

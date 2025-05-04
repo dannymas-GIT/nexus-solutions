@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/Card'; // Import Card only
 import { Button } from '@/components/ui/Button';
-import { Target, DollarSign, TrendingUp, Users } from 'lucide-react'; // Example icons
+import { Target, DollarSign, TrendingUp /*, Users */ } from 'lucide-react'; // Removed unused Users icon
 
 // Placeholder type for a KPI - we can refine this later
 interface KpiDefinition {

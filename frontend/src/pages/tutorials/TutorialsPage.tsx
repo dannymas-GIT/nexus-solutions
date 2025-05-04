@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { 
-  BookOpen, Play, CheckCircle, Clock, Search, 
-  Filter, ChevronDown, Star, ArrowRight, ChevronRight,
+import {
+  // BookOpen, // Unused
+  Play, CheckCircle, Clock, Search,
+  Filter, ChevronDown, Star, ArrowRight, 
+  // ChevronRight, // Unused
   Monitor, FileText, Database, PieChart
 } from 'lucide-react';
 

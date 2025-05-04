@@ -14,7 +14,7 @@ interface Integration {
 
 const IntegrationsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [activeCategory, /* setActiveCategory */] = useState<string>('all');
   const [showConnected, setShowConnected] = useState(false);
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
 
@@ -157,15 +157,15 @@ const IntegrationsPage: React.FC = () => {
   const connectedIntegrations = integrations.filter(integration => integration.isConnected);
 
   // Toggle connection status (in a real app, this would call an API)
-  const toggleConnection = (integration: Integration) => {
+  const toggleConnection = (/* integration: Integration */) => {
     // This is just for demo purposes - in a real app you would make an API call
-    const updatedIntegrations = integrations.map(item => {
-      if (item.id === integration.id) {
-        return { ...item, isConnected: !item.isConnected };
-      }
-      return item;
-    });
-    
+    // const updatedIntegrations = integrations.map(item => { // Unused variable
+    //   if (item.id === integration.id) {
+    //     return { ...item, isConnected: !item.isConnected };
+    //   }
+    //   return item;
+    // });
+
     // For now, just close the modal
     setSelectedIntegration(null);
   };
@@ -283,7 +283,7 @@ const IntegrationsPage: React.FC = () => {
                     </button>
                     <button 
                       className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg"
-                      onClick={() => toggleConnection(selectedIntegration)}
+                      onClick={() => toggleConnection(/* selectedIntegration */)}
                     >
                       Disconnect
                     </button>
@@ -291,7 +291,7 @@ const IntegrationsPage: React.FC = () => {
                 ) : (
                   <button 
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
-                    onClick={() => toggleConnection(selectedIntegration)}
+                    onClick={() => toggleConnection(/* selectedIntegration */)}
                   >
                     Connect
                   </button>

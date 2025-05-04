@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Users, UserPlus, UserMinus, UserCog, Shield, 
-  Mail, MessageSquare, ChevronDown, Search, X 
+import React, { useState /*, useEffect */ } from 'react';
+import {
+  Users, UserPlus, UserMinus, UserCog, Shield,
+  Mail, /* MessageSquare, ChevronDown, */ Search, X
 } from 'lucide-react';
 
 interface TeamMember {
@@ -19,7 +19,7 @@ const TeamPage: React.FC = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   
   // Sample team members data
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
+  const [teamMembers, /* setTeamMembers */] = useState<TeamMember[]>([
     {
       id: '1',
       name: 'John Smith',
