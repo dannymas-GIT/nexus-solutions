@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Rocket, BarChart3, Users } from 'lucide-react';
-import Navbar from '../components/navigation/Navbar';
+import NavBar from '../components/navigation/NavBar';
 
 const SplashPage: React.FC = () => {
   const navigate = useNavigate();
@@ -14,7 +14,7 @@ const SplashPage: React.FC = () => {
 
   return (
     <>
-      <Navbar />
+      <NavBar />
       <div className="min-h-screen relative bg-gradient-to-br from-indigo-900 via-blue-900 to-blue-950 text-white overflow-hidden">
         {/* Background decorations */}
         <div className="absolute inset-0 overflow-hidden">

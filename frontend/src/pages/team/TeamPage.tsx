@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Users, UserPlus, UserMinus, UserCog, Shield, 
-  Mail, MessageSquare, ChevronDown, Search, X 
+  Mail, Search, X 
 } from 'lucide-react';
 
 interface TeamMember {
@@ -19,7 +19,7 @@ const TeamPage: React.FC = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   
   // Sample team members data
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
+  const [teamMembers, _setTeamMembers] = useState<TeamMember[]>([
     {
       id: '1',
       name: 'John Smith',
@@ -54,7 +54,7 @@ const TeamPage: React.FC = () => {
     }
   ]);
   
-  const filteredMembers = teamMembers.filter(member => {
+  const filteredMembers = teamMembers.filter((member: TeamMember) => {
     const searchLower = searchTerm.toLowerCase();
     return (
       member.name.toLowerCase().includes(searchLower) || 
@@ -146,7 +146,7 @@ const TeamPage: React.FC = () => {
                 placeholder="Search members..."
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
               />
             </div>
             <button
@@ -186,7 +186,7 @@ const TeamPage: React.FC = () => {
                       <div className="flex items-center">
                         <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
                           <span className="text-gray-600 font-medium text-sm">
-                            {member.name.split(' ').map(n => n[0]).join('')}
+                            {member.name.split(' ').map((n: string) => n[0]).join('')}
                           </span>
                         </div>
                         <div className="ml-4">

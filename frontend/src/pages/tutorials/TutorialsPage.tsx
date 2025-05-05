@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
-  BookOpen, Play, CheckCircle, Clock, Search, 
-  Filter, ChevronDown, Star, ArrowRight, ChevronRight,
+  Play, CheckCircle, Clock, Search, 
+  Filter, ChevronDown, Star, ArrowRight,
   Monitor, FileText, Database, PieChart
 } from 'lucide-react';
 
@@ -302,7 +302,7 @@ const TutorialsPage: React.FC = () => {
                 placeholder="Search tutorials..."
                 className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
               />
             </div>
             

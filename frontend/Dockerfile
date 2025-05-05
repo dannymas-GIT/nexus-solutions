@@ -6,9 +6,8 @@ WORKDIR /app
 # Copy package.json and package-lock.json (or yarn.lock)
 COPY package.json package-lock.json* ./
 
-# Install dependencies
-# Use ci for faster, deterministic installs
-RUN npm ci
+# Ensure a clean install
+RUN rm -rf node_modules && npm ci
 
 # Copy the rest of the application code
 COPY . .

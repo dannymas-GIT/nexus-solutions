@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  FileText, 
-  LayoutDashboard, 
+  // FileText, // Removed unused import
+  // LayoutDashboard, // Removed unused import
   Settings, 
   ChevronLeft, 
   LogOut,
@@ -12,6 +12,7 @@ import {
   Database,
   Briefcase
 } from 'lucide-react';
+// import { ModeToggle } from '../ui/ModeToggle'; // Commented out - File not found
 
 interface NavItem {
   icon: React.ReactNode;
@@ -31,7 +32,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [_isDarkMode, setIsDarkMode] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({
     'images-graphics': true
   });

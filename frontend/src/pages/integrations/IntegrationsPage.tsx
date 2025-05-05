@@ -14,7 +14,7 @@ interface Integration {
 
 const IntegrationsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [_setActiveCategory] = useState<string>('All');
   const [showConnected, setShowConnected] = useState(false);
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
 
@@ -146,7 +146,7 @@ const IntegrationsPage: React.FC = () => {
   const filteredIntegrations = integrations.filter(integration => {
     const matchesSearch = integration.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           integration.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = activeCategory === 'all' || integration.category === activeCategory;
+    const matchesCategory = _setActiveCategory === 'all' || integration.category === _setActiveCategory;
     const matchesConnection = !showConnected || integration.isConnected;
     
     return matchesSearch && matchesCategory && matchesConnection;
@@ -159,7 +159,7 @@ const IntegrationsPage: React.FC = () => {
   // Toggle connection status (in a real app, this would call an API)
   const toggleConnection = (integration: Integration) => {
     // This is just for demo purposes - in a real app you would make an API call
-    const updatedIntegrations = integrations.map(item => {
+    const [_updatedIntegrations] = integrations.map(item => {
       if (item.id === integration.id) {
         return { ...item, isConnected: !item.isConnected };
       }
@@ -344,7 +344,7 @@ const IntegrationsPage: React.FC = () => {
                 placeholder="Search integrations..."
                 className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
               />
             </div>
             
@@ -440,7 +440,7 @@ const IntegrationsPage: React.FC = () => {
           <div>
             <h2 className="text-xl font-bold text-gray-900 mb-4">
               All Integrations
-              {activeCategory !== 'all' && ` - ${activeCategory}`}
+              {_setActiveCategory !== 'all' && ` - ${_setActiveCategory}`}
               {showConnected && ' (Connected)'}
             </h2>
             

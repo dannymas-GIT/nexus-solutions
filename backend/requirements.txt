@@ -1,0 +1,13 @@
+uvicorn[standard]
+fastapi
+pydantic
+python-multipart
+weasyprint
+pydantic-settings
+requests
+cryptography
+PyJWT
+python-docx
+python-dotenv
+reportlab
+python-pptx 

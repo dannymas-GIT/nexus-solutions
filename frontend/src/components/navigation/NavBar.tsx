@@ -1,349 +1,430 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FileText, BarChart, FileOutput, Menu, X, ChevronDown, Search, Bell } from 'lucide-react';
-import MegaMenu from './MegaMenu';
+import { 
+  Menu,
+  X,
+  ChevronDown,
+  Search,
+  Bell,
+  User,
+  HelpCircle
+} from 'lucide-react';
+// import { ModeToggle } from '../ui/ModeToggle'; // Commented out - File not found
 
-/**
- * NavBar component
- * 
- * Main navigation bar with mega menu dropdown functionality
- */
-const NavBar: React.FC = () => {
+interface NavItem {
+  label: string;
+  path: string;
+  submenu?: {
+    label: string;
+    path: string;
+    description?: string;
+  }[];
+}
+
+const Navbar: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [_isScrolled, setIsScrolled] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
-  const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const navRef = useRef<HTMLDivElement>(null);
-  
-  // Check if a route is active
-  const isActive = (path: string): boolean => {
-    return location.pathname === path;
-  };
 
-  // Toggle mobile menu
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-    if (!mobileMenuOpen) {
-      setMegaMenuOpen(false);
+  // Navigation items with dropdown submenus - RESTRUCTURED & REORDERED
+  const navigationItems: NavItem[] = [
+    {
+      label: 'Dashboard',
+      path: '/dashboard',
+    },
+    {
+      label: 'Business Plans',
+      path: '/create-business-plan',
+      submenu: [
+        { 
+          label: 'Create New Plan', 
+          path: '/create-business-plan',
+          description: 'Start with our step-by-step wizard' 
+        },
+        { 
+          label: 'My Plans', 
+          path: '/my-plans',
+          description: 'View and edit your saved plans'
+        },
+        { 
+          label: 'Templates', 
+          path: '/plan-templates',
+          description: 'Pre-made business plan templates'
+        }
+      ]
+    },
+    {
+      label: 'Analysis Engine',
+      path: '/analysis-engine',
+      submenu: [
+        {
+          label: 'Set KPIs',
+          path: '/analysis-engine/set-kpis',
+          description: 'Define Key Performance Indicators'
+        }
+      ]
+    },
+    {
+      label: 'Documents',
+      path: '/docs',
+      submenu: [
+        { 
+          label: 'Marketing Materials', 
+          path: '/docs/marketing',
+          description: 'Brochures, value propositions, and datasheets'
+        },
+        { 
+          label: 'Case Studies', 
+          path: '/docs/case-studies',
+          description: 'Customer success stories and implementations'
+        },
+        { 
+          label: 'Presentations', 
+          path: '/docs/presentations',
+          description: 'Slides, decks and presentation materials'
+        },
+        { 
+          label: 'Images & Graphics', 
+          path: '/docs/images',
+          description: 'Logos, illustrations and brand assets'
+        }
+      ]
+    },
+    // Grouped Items under "Settings"
+    {
+      label: 'Settings',
+      path: '/settings', // Main path for the group
+      submenu: [
+        {
+          label: 'Team Management',
+          path: '/team',
+          description: 'Manage users, roles, and permissions'
+        },
+        {
+          label: 'Tutorials & Help',
+          path: '/tutorials',
+          description: 'Learn how to use the platform effectively'
+        },
+        {
+          label: 'Integrations',
+          path: '/integrations',
+          description: 'Connect with other tools and services'
+        },
+        {
+          label: 'Account Settings',
+          path: '/settings',
+          description: 'Manage your profile and account preferences'
+        },
+        {
+          label: 'Security Analysis',
+          path: '/settings/security-analysis',
+          description: 'AI-powered security footprint analysis'
+        }
+      ]
     }
-  };
+  ];
 
-  // Handle menu trigger clicks
-  const handleMenuTrigger = (menuType: string) => {
-    if (activeMenu === menuType && megaMenuOpen) {
-      setMegaMenuOpen(false);
-      setActiveMenu(null);
-    } else {
-      setMegaMenuOpen(true);
-      setActiveMenu(menuType);
-    }
-  };
-
-  // Close mega menu
-  const closeMegaMenu = () => {
-    setMegaMenuOpen(false);
-    setActiveMenu(null);
-  };
-
-  // Detect dark mode
+  // Listen for scroll events to change navbar appearance
   useEffect(() => {
-    // Check system preference
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setIsDarkMode(prefersDark);
-    
-    // Listen for changes in system preference
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
-      setIsDarkMode(e.matches);
-    };
-    
-    mediaQuery.addEventListener('change', handleChange);
-    return () => {
-      mediaQuery.removeEventListener('change', handleChange);
-    };
-  }, []);
-
-  // Close mega menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (navRef.current && !navRef.current.contains(event.target as Node)) {
-        setMegaMenuOpen(false);
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mega menu when route changes
+  // Handle dropdown menu toggle
+  const toggleDropdown = (label: string) => {
+    if (openDropdown === label) {
+      setOpenDropdown(null);
+    } else {
+      setOpenDropdown(label);
+    }
+  };
+
+  // Close dropdown when clicking outside
   useEffect(() => {
-    setMegaMenuOpen(false);
-    setActiveMenu(null);
-    setMobileMenuOpen(false);
-  }, [location.pathname]);
-  
+    const handleClickOutside = () => {
+      setOpenDropdown(null);
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
+  // Prevent closing when clicking inside dropdown
+  const handleDropdownClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-lg dark:bg-gray-900 dark:border-gray-700" ref={navRef}>
-      <div className="max-w-[95%] mx-auto px-2 sm:px-3 lg:px-4">
-        <div className="flex justify-between h-24">
-          {/* Logo and brand */}
-          <div className="flex-shrink-0 flex items-center pl-0">
-            <Link to="/" className="flex flex-col items-center">
-              <img 
-                className="h-16 w-auto mb-1" 
-                src="/images/logo-transparent.png" 
-                alt="Nexus"
-              />
-              <div className="hidden md:block">
-                <p className="text-base text-gray-600 italic font-light leading-none dark:text-gray-300">
+    <nav 
+      className="fixed top-0 w-full z-50 transition-all duration-300 bg-white shadow-md"
+    >
+      <div className="mx-auto px-4 sm:px-6 lg:pl-0 lg:pr-6">
+        <div className="flex justify-between h-28">
+          {/* Left side: Desktop navigation Links ONLY */}
+          <div className="flex items-center h-full">
+            {/* Logo and Motto for Splash Page */}
+            {location.pathname === '/' && (
+              <Link to="/" className="flex flex-col items-start ml-24 mr-24">
+                <img 
+                  className="w-80 h-20"
+                  src="/images/logo-light.png"
+                  alt="Nexus"
+                />
+                <p className="text-lg w-80 text-center text-black italic font-medium font-serif leading-none">
                   Where data converges, insight emerges.
                 </p>
+              </Link>
+            )}
+            
+            {/* Desktop Navigation Links */}
+            <div className="hidden md:flex items-center h-full space-x-1">
+              {navigationItems.map((item) => (
+                <div key={item.label} className="relative h-full flex items-center" onClick={handleDropdownClick}>
+                  {item.submenu ? (
+                    <div className="h-full flex items-center">
+                      <button
+                        onClick={() => toggleDropdown(item.label)}
+                        className={`flex items-center px-3 py-2 text-base font-medium rounded-md ${
+                          location.pathname.startsWith(item.path) || openDropdown === item.label
+                            ? 'text-blue-600'
+                            : 'text-gray-700 hover:text-blue-500 hover:bg-gray-100'
+                        }`}
+                      >
+                        {item.label}
+                        <ChevronDown 
+                          size={16} 
+                          className={`ml-1 transition-transform ${
+                            openDropdown === item.label ? 'transform rotate-180' : ''
+                          }`}
+                        />
+                      </button>
+                      
+                      {/* Dropdown Menu */}
+                      {openDropdown === item.label && (
+                        <div 
+                          className="absolute top-full left-0 w-60 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+                        >
+                          <div className="py-1">
+                            {item.submenu.map((subItem) => (
+                              <Link
+                                key={subItem.path}
+                                to={subItem.path}
+                                className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
+                              >
+                                <div className="font-medium">{subItem.label}</div>
+                                {subItem.description && (
+                                  <p className="text-xs text-gray-500 mt-1">{subItem.description}</p>
+                                )}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <Link
+                      to={item.path}
+                      className={`flex items-center px-3 py-2 text-base font-medium rounded-md ${
+                        location.pathname === item.path
+                          ? 'text-blue-600'
+                          : 'text-gray-700 hover:text-blue-500 hover:bg-gray-100'
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Right side - Search and user actions */}
+          <div className="flex items-center space-x-4 pr-6">
+            {/* Search */}
+            <div className="hidden md:flex relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-gray-400" />
               </div>
-            </Link>
-          </div>
-          
-          {/* Desktop navigation */}
-          <div className="hidden sm:flex sm:items-center sm:space-x-2">
-            {/* Create dropdown trigger */}
-            <button 
-              className={`px-4 py-2 rounded-md text-base font-medium h-20 flex items-center transition-colors duration-150 ${
-                activeMenu === 'create' && megaMenuOpen
-                  ? 'text-[#0047AB] border-b-2 border-[#0047AB] bg-blue-50 dark:text-blue-400 dark:border-blue-400 dark:bg-blue-900/30'
-                  : 'text-gray-600 hover:text-[#0047AB] hover:bg-gray-50 dark:text-gray-300 dark:hover:text-blue-400 dark:hover:bg-gray-800'
-              }`}
-              onClick={() => handleMenuTrigger('create')}
-              aria-expanded={activeMenu === 'create' && megaMenuOpen}
-            >
-              <span>Create</span>
-              <ChevronDown className={`w-5 h-5 ml-1 transition-transform ${
-                activeMenu === 'create' && megaMenuOpen ? 'rotate-180' : ''
-              }`} />
+              <input
+                type="text"
+                placeholder="Search..."
+                className="pl-10 pr-3 py-1.5 w-56 text-sm bg-gray-100 border-0 rounded-full focus:ring-2 focus:ring-blue-500 focus:bg-white"
+              />
+            </div>
+            
+            {/* Notification icon */}
+            <button className="p-1.5 rounded-full text-gray-500 hover:bg-gray-100">
+              <Bell size={20} />
             </button>
             
-            {/* Manage dropdown trigger */}
-            <button
-              className={`px-4 py-2 rounded-md text-base font-medium h-20 flex items-center transition-colors duration-150 ${
-                activeMenu === 'manage' && megaMenuOpen
-                  ? 'text-[#0047AB] border-b-2 border-[#0047AB] bg-blue-50'
-                  : 'text-gray-600 hover:text-[#0047AB] hover:bg-gray-50'
-              }`}
-              onClick={() => handleMenuTrigger('manage')}
-              aria-expanded={activeMenu === 'manage' && megaMenuOpen}
-            >
-              <span>Manage</span>
-              <ChevronDown className={`w-5 h-5 ml-1 transition-transform ${
-                activeMenu === 'manage' && megaMenuOpen ? 'rotate-180' : ''
-              }`} />
+            {/* Help icon */}
+            <button className="p-1.5 rounded-full text-gray-500 hover:bg-gray-100">
+              <HelpCircle size={20} />
             </button>
             
-            {/* Resources dropdown trigger */}
-            <button
-              className={`px-4 py-2 rounded-md text-base font-medium h-20 flex items-center transition-colors duration-150 ${
-                activeMenu === 'resources' && megaMenuOpen
-                  ? 'text-[#0047AB] border-b-2 border-[#0047AB] bg-blue-50'
-                  : 'text-gray-600 hover:text-[#0047AB] hover:bg-gray-50'
-              }`}
-              onClick={() => handleMenuTrigger('resources')}
-              aria-expanded={activeMenu === 'resources' && megaMenuOpen}
-            >
-              <span>Resources</span>
-              <ChevronDown className={`w-5 h-5 ml-1 transition-transform ${
-                activeMenu === 'resources' && megaMenuOpen ? 'rotate-180' : ''
-              }`} />
-            </button>
-            
-            {/* Direct links */}
-            <Link
-              to="/docs"
-              className={`px-4 py-2 rounded-md text-base font-medium h-20 flex items-center transition-colors duration-150 ${
-                isActive('/docs')
-                  ? 'text-[#0047AB] border-b-2 border-[#0047AB] bg-blue-50'
-                  : 'text-gray-600 hover:text-[#0047AB] hover:bg-gray-50'
-              }`}
-            >
-              <FileOutput className="w-5 h-5 mr-1.5" aria-hidden="true" />
-              <span>Documents</span>
-            </Link>
-            
-            <Link
-              to="/dashboard"
-              className={`px-4 py-2 rounded-md text-base font-medium h-20 flex items-center transition-colors duration-150 ${
-                isActive('/dashboard')
-                  ? 'text-[#0047AB] border-b-2 border-[#0047AB] bg-blue-50'
-                  : 'text-gray-600 hover:text-[#0047AB] hover:bg-gray-50'
-              }`}
-            >
-              <BarChart className="w-5 h-5 mr-1.5" aria-hidden="true" />
-              <span>Dashboard</span>
-            </Link>
-          </div>
-
-          {/* User menu and notification (desktop) */}
-          <div className="hidden sm:flex sm:items-center space-x-4">
-            {/* Notification Bell */}
-            <button
-              type="button"
-              className="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0047AB]"
-            >
-              <span className="sr-only">View notifications</span>
-              <Bell className="h-6 w-6" aria-hidden="true" />
-            </button>
-          
-            {/* User Profile */}
-            <div className="relative">
-              <button
-                type="button"
-                className="flex items-center rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0047AB]"
-                id="user-menu-button"
-                aria-expanded="false"
-                aria-haspopup="true"
+            {/* User profile */}
+            <div className="relative ml-3">
+              <button 
+                className="flex items-center bg-gray-100 p-1 rounded-full hover:bg-gray-200 focus:outline-none"
+                onClick={() => toggleDropdown('profile')}
               >
-                <span className="sr-only">Open user menu</span>
-                <div className="h-10 w-10 overflow-hidden rounded-full bg-gradient-to-r from-[#0047AB] to-[#2177FF] text-white flex items-center justify-center shadow-md transition-transform hover:scale-105">
-                  <span className="font-medium text-base">JD</span>
+                <div className="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                  <User size={18} />
                 </div>
               </button>
+              
+              {/* User dropdown */}
+              {openDropdown === 'profile' && (
+                <div 
+                  className="absolute right-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+                  onClick={handleDropdownClick}
+                >
+                  <div className="px-4 py-2 border-b border-gray-100">
+                    <p className="text-sm font-medium text-gray-900">John Doe</p>
+                    <p className="text-xs text-gray-500">john@example.com</p>
+                  </div>
+                  <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    Your Profile
+                  </Link>
+                  <Link to="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    Settings
+                  </Link>
+                  <Link to="/logout" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    Sign out
+                  </Link>
+                </div>
+              )}
             </div>
             
-            {/* Search bar (desktop) - moved to rightmost position */}
-            <div className="hidden lg:flex items-center ml-3">
-              <div className="w-72 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                </div>
-                <input
-                  type="text"
-                  className="block w-full pl-10 pr-3 py-2.5 rounded-full text-base bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-[#0047AB] focus:border-transparent dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
-                  placeholder="Search..."
-                />
-              </div>
+            {/* Mobile menu button */}
+            <div className="flex md:hidden">
+              <button
+                type="button"
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-500 hover:bg-gray-100"
+                onClick={() => setIsOpen(!isOpen)}
+              >
+                <span className="sr-only">Open main menu</span>
+                {isOpen ? (
+                  <X className="block h-6 w-6" aria-hidden="true" />
+                ) : (
+                  <Menu className="block h-6 w-6" aria-hidden="true" />
+                )}
+              </button>
             </div>
-          </div>
-          
-          {/* Mobile menu button */}
-          <div className="flex items-center sm:hidden">
-            <button
-              type="button"
-              onClick={toggleMobileMenu}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#0047AB]"
-              aria-controls="mobile-menu"
-              aria-expanded={mobileMenuOpen}
-            >
-              <span className="sr-only">Open main menu</span>
-              {mobileMenuOpen ? (
-                <X className="block h-5 w-5" aria-hidden="true" />
-              ) : (
-                <Menu className="block h-5 w-5" aria-hidden="true" />
-              )}
-            </button>
           </div>
         </div>
       </div>
 
-      {/* Mega Menu */}
-      {megaMenuOpen && (
-        <MegaMenu 
-          isOpen={megaMenuOpen} 
-          onClose={closeMegaMenu} 
-          activeMenu={activeMenu || undefined} 
-        />
-      )}
-
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="sm:hidden border-b border-gray-200" id="mobile-menu">
-          {/* Mobile search bar */}
-          <div className="px-4 pt-4 pb-2">
+      {/* Mobile menu, show/hide based on menu state */}
+      {isOpen && (
+        <div className="md:hidden">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            {navigationItems.map((item) => (
+              <div key={item.label}>
+                {item.submenu ? (
+                  <>
+                    <button
+                      onClick={() => toggleDropdown(item.label)}
+                      className="w-full flex justify-between items-center px-3 py-2 text-base font-medium rounded-md text-gray-700 hover:text-blue-500 hover:bg-gray-100"
+                    >
+                      {item.label}
+                      <ChevronDown 
+                        size={16} 
+                        className={openDropdown === item.label ? 'transform rotate-180' : ''}
+                      />
+                    </button>
+                    
+                    {openDropdown === item.label && (
+                      <div className="pl-4 space-y-1 mt-1">
+                        {item.submenu.map((subItem) => (
+                          <Link
+                            key={subItem.path}
+                            to={subItem.path}
+                            className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+                          >
+                            {subItem.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <Link
+                    to={item.path}
+                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                      location.pathname === item.path 
+                        ? 'text-blue-600' 
+                        : 'text-gray-700 hover:text-blue-500 hover:bg-gray-100'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                )}
+              </div>
+            ))}
+          </div>
+          
+          {/* Mobile search */}
+          <div className="px-4 py-3 border-t border-gray-200">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-gray-400" aria-hidden="true" />
+                <Search className="h-4 w-4 text-gray-400" />
               </div>
               <input
                 type="text"
-                className="block w-full pl-10 pr-3 py-2 rounded-full text-sm bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-[#0047AB] focus:border-transparent"
                 placeholder="Search..."
+                className="pl-10 pr-3 py-2 w-full text-sm bg-gray-100 border-0 rounded-md focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
-        
-          {/* Mobile navigation links */}
-          <div className="pt-2 pb-3 space-y-1 px-3">
-            <Link
-              to="/create-business-plan"
-              className="flex items-center p-2 rounded-lg text-base font-medium text-gray-700 hover:text-[#0047AB] hover:bg-blue-50 transition-colors duration-150"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <div className="flex-shrink-0 h-8 w-8 rounded-md bg-[#F0F4FF] flex items-center justify-center mr-3">
-                <FileText className="w-4 h-4 text-[#0047AB]" aria-hidden="true" />
-              </div>
-              <span>Create Business Plan</span>
-            </Link>
-            
-            <Link
-              to="/docs"
-              className="flex items-center p-2 rounded-lg text-base font-medium text-gray-700 hover:text-[#0047AB] hover:bg-blue-50 transition-colors duration-150"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <div className="flex-shrink-0 h-8 w-8 rounded-md bg-[#F0F4FF] flex items-center justify-center mr-3">
-                <FileOutput className="w-4 h-4 text-[#0047AB]" aria-hidden="true" />
-              </div>
-              <span>Documents</span>
-            </Link>
-            
-            <Link
-              to="/dashboard"
-              className="flex items-center p-2 rounded-lg text-base font-medium text-gray-700 hover:text-[#0047AB] hover:bg-blue-50 transition-colors duration-150"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <div className="flex-shrink-0 h-8 w-8 rounded-md bg-[#F0F4FF] flex items-center justify-center mr-3">
-                <BarChart className="w-4 h-4 text-[#0047AB]" aria-hidden="true" />
-              </div>
-              <span>Dashboard</span>
-            </Link>
-          </div>
           
-          {/* Mobile user profile */}
-          <div className="pt-4 pb-3 border-t border-gray-200 bg-gray-50">
-            <div className="flex items-center px-4 py-3">
+          {/* Mobile profile */}
+          <div className="pt-4 pb-3 border-t border-gray-200">
+            <div className="flex items-center px-4">
               <div className="flex-shrink-0">
-                <div className="h-10 w-10 overflow-hidden rounded-full bg-gradient-to-r from-[#0047AB] to-[#2177FF] text-white flex items-center justify-center shadow-md">
-                  <span className="font-medium">JD</span>
+                <div className="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                  <User size={20} />
                 </div>
               </div>
               <div className="ml-3">
                 <div className="text-base font-medium text-gray-800">John Doe</div>
                 <div className="text-sm font-medium text-gray-500">john@example.com</div>
               </div>
-              <button
-                type="button"
-                className="ml-auto p-1.5 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0047AB]"
-              >
-                <span className="sr-only">View notifications</span>
-                <Bell className="h-5 w-5" aria-hidden="true" />
-              </button>
             </div>
-            <div className="mt-3 space-y-1 px-3">
+            <div className="mt-3 space-y-1 px-2">
+              <Link
+                to="/profile"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+              >
+                Your Profile
+              </Link>
               <Link
                 to="/settings"
-                className="block px-4 py-2 rounded-lg text-base font-medium text-gray-700 hover:text-[#0047AB] hover:bg-blue-50 transition-colors duration-150"
-                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
               >
                 Settings
               </Link>
-              <button
-                className="block w-full text-left px-4 py-2 rounded-lg text-base font-medium text-gray-700 hover:text-[#0047AB] hover:bg-blue-50 transition-colors duration-150"
+              <Link
+                to="/logout"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
               >
                 Sign out
-              </button>
+              </Link>
             </div>
           </div>
         </div>
       )}
-    </header>
+    </nav>
   );
 };
 
-export default NavBar; 
+export default Navbar; 

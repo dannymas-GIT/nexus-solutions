@@ -1,6 +1,6 @@
 import React from 'react';
 import Sidebar from '../navigation/Sidebar';
-import Navbar from '../navigation/Navbar';
+import NavBar from '../navigation/NavBar';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -12,7 +12,7 @@ const Layout: React.FC<LayoutProps> = ({ children, showSidebar = true }) => {
     <div className="flex h-screen bg-brand-neutral">
       {showSidebar && <Sidebar />}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Navbar />
+        <NavBar />
         <main className="flex-1 overflow-auto p-6 pt-28">
           {children}
         </main>
