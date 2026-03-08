@@ -129,18 +129,37 @@ const BusinessPlanWizard: React.FC = () => {
     }
   };
 
-  // Submit the business plan
+  // Submit the business plan - persists via API and offers PDF generation
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      // Here you would normally make an API call to submit the data
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
-      
-      // After submission is complete, you could redirect to dashboard or documents
-      alert('Business plan created successfully!');
+      const res = await fetch('/api/v1/intake', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(businessPlanData),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || res.statusText || 'Failed to save');
+      }
+      const intake = await res.json();
+      // Offer PDF generation
+      const pdfRes = await fetch(`/api/v1/intake/${intake.id}/generate`, { method: 'POST' });
+      if (pdfRes.ok) {
+        const blob = await pdfRes.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `business_plan_${intake.id}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+        alert('Business plan saved and PDF downloaded!');
+      } else {
+        alert('Business plan saved successfully!');
+      }
     } catch (error) {
       console.error('Error submitting business plan:', error);
-      alert('There was an error creating your business plan.');
+      alert(error instanceof Error ? error.message : 'There was an error creating your business plan.');
     } finally {
       setIsSubmitting(false);
     }

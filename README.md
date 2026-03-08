@@ -84,28 +84,26 @@ Nexus Business Builder is a full-stack application that automates the creation o
 
 ## Running with Docker
 
-Alternatively, you can run the entire application using Docker Compose.
+The project includes a standalone Docker Compose setup that **co-exists with ve-projects** without conflicts:
 
-1.  **Build the containers:**
+- **Isolated network**: `nexus-network` (separate from ve-projects' `ve-network`)
+- **Non-conflicting ports**: Frontend on `8082` (ve-projects uses 8080, 8081, 8888, 3306)
+
+1. **Build and start** (from project root):
 
     ```bash
-    docker-compose build
+    cd /opt/projects/nexus-solutions
+    docker compose up -d --build
     ```
 
-2.  **Start the services:**
+2. **Access the application:**
+    - Frontend: `http://localhost:8082` (or `http://nexus-solutions.us:8082` if DNS points here)
+    - API docs: `http://localhost:8082/api` → proxied to backend
+
+3. **Stop the services:**
 
     ```bash
-    docker-compose up
-    ```
-
-    This will start:
-    - The backend API service accessible at `http://localhost:8001`
-    - The frontend application accessible at `http://localhost:3000`
-
-3.  **To stop the services:**
-
-    ```bash
-    docker-compose down
+    docker compose down
     ```
 
 ## Project Structure

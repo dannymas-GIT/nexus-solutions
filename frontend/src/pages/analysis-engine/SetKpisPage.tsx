@@ -62,13 +62,46 @@ const recommendedKpis: KpiDefinition[] = [
 ];
 
 const SetKpisPage: React.FC = () => {
-  // In a real implementation, you might fetch the actual business plan data here
-  // const { data: businessPlan } = useQuery(['businessPlanData']); 
+  const [kpis, setKpis] = React.useState<{ id: number; name: string; metric_key: string; target_value: number | null }[]>([]);
+  const [loading, setLoading] = React.useState(false);
+  const WORKSPACE_ID = 1; // Default workspace for MVP
 
-  const handleAddKpi = (kpiId: string) => {
-    // Placeholder logic to add/track the KPI
-    console.log(`Adding recommended KPI: ${kpiId}`);
-    alert(`Tracking KPI: ${kpiId} (Implementation Pending)`);
+  React.useEffect(() => {
+    fetch(`/api/v1/kpis?workspace_id=${WORKSPACE_ID}`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setKpis)
+      .catch(() => setKpis([]));
+  }, []);
+
+  const handleAddKpi = async (kpiId: string) => {
+    const kpi = recommendedKpis.find((k) => k.id === kpiId);
+    if (!kpi) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/v1/kpis?workspace_id=${WORKSPACE_ID}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: kpi.name,
+          metric_key: kpi.sourceField || kpi.id,
+          target_value: null,
+          unit: '',
+          description: kpi.description,
+        }),
+      });
+      if (res.ok) {
+        const created = await res.json();
+        setKpis((prev) => [...prev, created]);
+        alert(`KPI "${kpi.name}" added successfully`);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.detail || 'Failed to add KPI. Create a workspace first.');
+      }
+    } catch (e) {
+      alert('Failed to add KPI');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -96,7 +129,7 @@ const SetKpisPage: React.FC = () => {
                   {kpi.sourceField && <p className="text-xs text-gray-400 italic">Source: {kpi.sourceField}</p>}
                 </div>
               </div>
-              <Button size="sm" variant="outline" onClick={() => handleAddKpi(kpi.id)}>
+              <Button size="sm" variant="outline" onClick={() => handleAddKpi(kpi.id)} disabled={loading}>
                 Track
               </Button>
             </div>
@@ -104,16 +137,31 @@ const SetKpisPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* Custom KPI Creation Section - Refactored */}
+      {/* Your KPIs */}
+      {kpis.length > 0 && (
+        <Card title="Your KPIs" subtitle="KPIs you are tracking.">
+          <div className="pt-4 space-y-2">
+            {kpis.map((k) => (
+              <div key={k.id} className="flex items-center justify-between p-3 bg-white border rounded-lg">
+                <div>
+                  <p className="font-medium">{k.name}</p>
+                  <p className="text-sm text-gray-500">{k.metric_key}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* Custom KPI Creation Section */}
       <Card
         title="Create Custom KPI"
         subtitle="Define your own specific KPIs based on available data fields."
       >
-        <div className="pt-4"> {/* Added wrapper div for spacing */}
+        <div className="pt-4">
           <p className="text-center text-gray-500 py-8">
-            Custom KPI creation form will be implemented here.
+            Custom KPI creation form coming soon.
           </p>
-          {/* Form elements will go here */}
         </div>
       </Card>
     </div>

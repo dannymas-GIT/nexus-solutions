@@ -10,4 +10,9 @@ PyJWT
 python-docx
 python-dotenv
 reportlab
-python-pptx 
+python-pptx
+sqlalchemy>=2.0
+psycopg2-binary
+alembic
+passlib[bcrypt]
+python-jose[cryptography] 

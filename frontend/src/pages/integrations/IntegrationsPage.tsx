@@ -6,27 +6,41 @@ interface Integration {
   name: string;
   description: string;
   category: 'Analytics' | 'CRM' | 'Financial' | 'Marketing' | 'Productivity' | 'Other';
+  connectorType: string; // API connector_type
   logoUrl: string;
   isConnected: boolean;
   isPopular: boolean;
   isNew: boolean;
 }
 
+const WORKSPACE_ID = 1;
+
 const IntegrationsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [_setActiveCategory] = useState<string>('All');
   const [showConnected, setShowConnected] = useState(false);
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
+  const [connectors, setConnectors] = useState<{ id: number; name: string; connector_type: string }[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Sample integrations data
-  const integrations: Integration[] = [
+  React.useEffect(() => {
+    fetch(`/api/v1/connectors?workspace_id=${WORKSPACE_ID}`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setConnectors)
+      .catch(() => setConnectors([]));
+  }, []);
+
+  const isConnected = (name: string) => connectors.some((c) => c.name === name);
+
+  // Catalog: integrations available to connect
+  const integrationsBase: Omit<Integration, 'isConnected'>[] = [
     {
       id: '1',
       name: 'Google Analytics',
       description: 'Connect your Google Analytics account to track website traffic and user behavior.',
       category: 'Analytics',
+      connectorType: 'analytics',
       logoUrl: 'https://via.placeholder.com/80x80/4285F4/FFFFFF?text=GA',
-      isConnected: true,
       isPopular: true,
       isNew: false,
     },
@@ -35,8 +49,8 @@ const IntegrationsPage: React.FC = () => {
       name: 'Salesforce',
       description: 'Integrate with Salesforce CRM to sync customers, leads, and opportunities.',
       category: 'CRM',
+      connectorType: 'crm',
       logoUrl: 'https://via.placeholder.com/80x80/00A1E0/FFFFFF?text=SF',
-      isConnected: false,
       isPopular: true,
       isNew: false,
     },
@@ -45,8 +59,8 @@ const IntegrationsPage: React.FC = () => {
       name: 'QuickBooks',
       description: 'Connect with QuickBooks to manage your financial data and reporting.',
       category: 'Financial',
+      connectorType: 'accounting',
       logoUrl: 'https://via.placeholder.com/80x80/2CA01C/FFFFFF?text=QB',
-      isConnected: true,
       isPopular: true,
       isNew: false,
     },
@@ -55,8 +69,8 @@ const IntegrationsPage: React.FC = () => {
       name: 'Mailchimp',
       description: 'Integrate with Mailchimp to sync contact lists and manage email campaigns.',
       category: 'Marketing',
+      connectorType: 'marketing',
       logoUrl: 'https://via.placeholder.com/80x80/FFE01B/000000?text=MC',
-      isConnected: false,
       isPopular: false,
       isNew: false,
     },
@@ -65,8 +79,8 @@ const IntegrationsPage: React.FC = () => {
       name: 'Slack',
       description: 'Get notifications and updates directly in your Slack channels.',
       category: 'Productivity',
+      connectorType: 'productivity',
       logoUrl: 'https://via.placeholder.com/80x80/4A154B/FFFFFF?text=SL',
-      isConnected: false,
       isPopular: true,
       isNew: false,
     },
@@ -75,8 +89,8 @@ const IntegrationsPage: React.FC = () => {
       name: 'Xero',
       description: 'Connect with Xero for accounting, invoicing, and financial reporting.',
       category: 'Financial',
+      connectorType: 'accounting',
       logoUrl: 'https://via.placeholder.com/80x80/13B5EA/FFFFFF?text=XE',
-      isConnected: false,
       isPopular: false,
       isNew: false,
     },
@@ -85,8 +99,8 @@ const IntegrationsPage: React.FC = () => {
       name: 'HubSpot',
       description: 'Integrate with HubSpot for marketing, sales, and customer service.',
       category: 'CRM',
+      connectorType: 'crm',
       logoUrl: 'https://via.placeholder.com/80x80/FF7A59/FFFFFF?text=HS',
-      isConnected: false,
       isPopular: true,
       isNew: false,
     },
@@ -95,8 +109,8 @@ const IntegrationsPage: React.FC = () => {
       name: 'Shopify',
       description: 'Connect your Shopify store to sync products, orders, and customers.',
       category: 'Financial',
+      connectorType: 'erp',
       logoUrl: 'https://via.placeholder.com/80x80/96BF48/FFFFFF?text=SH',
-      isConnected: false,
       isPopular: false,
       isNew: true,
     },
@@ -105,8 +119,8 @@ const IntegrationsPage: React.FC = () => {
       name: 'Microsoft Teams',
       description: 'Collaborate and share updates with your team directly from Nexus.',
       category: 'Productivity',
+      connectorType: 'productivity',
       logoUrl: 'https://via.placeholder.com/80x80/6264A7/FFFFFF?text=MT',
-      isConnected: false,
       isPopular: false,
       isNew: true,
     },
@@ -115,8 +129,8 @@ const IntegrationsPage: React.FC = () => {
       name: 'Google Workspace',
       description: 'Connect with Google Workspace for document management and collaboration.',
       category: 'Productivity',
+      connectorType: 'productivity',
       logoUrl: 'https://via.placeholder.com/80x80/4285F4/FFFFFF?text=GW',
-      isConnected: false,
       isPopular: true,
       isNew: false,
     },
@@ -125,8 +139,8 @@ const IntegrationsPage: React.FC = () => {
       name: 'Stripe',
       description: 'Integrate with Stripe for payment processing and subscription management.',
       category: 'Financial',
+      connectorType: 'accounting',
       logoUrl: 'https://via.placeholder.com/80x80/635BFF/FFFFFF?text=ST',
-      isConnected: false,
       isPopular: true,
       isNew: false,
     },
@@ -135,12 +149,17 @@ const IntegrationsPage: React.FC = () => {
       name: 'Airtable',
       description: 'Sync your Airtable databases with Nexus for enhanced data management.',
       category: 'Productivity',
+      connectorType: 'spreadsheet',
       logoUrl: 'https://via.placeholder.com/80x80/FFAE00/FFFFFF?text=AT',
-      isConnected: false,
       isPopular: false,
       isNew: true,
     },
   ];
+
+  const integrations: Integration[] = integrationsBase.map((i) => ({
+    ...i,
+    isConnected: isConnected(i.name),
+  }));
 
   // Filter integrations based on search, category, and connection status
   const filteredIntegrations = integrations.filter(integration => {
@@ -156,18 +175,35 @@ const IntegrationsPage: React.FC = () => {
   const newIntegrations = integrations.filter(integration => integration.isNew);
   const connectedIntegrations = integrations.filter(integration => integration.isConnected);
 
-  // Toggle connection status (in a real app, this would call an API)
-  const toggleConnection = (integration: Integration) => {
-    // This is just for demo purposes - in a real app you would make an API call
-    const [_updatedIntegrations] = integrations.map(item => {
-      if (item.id === integration.id) {
-        return { ...item, isConnected: !item.isConnected };
+  const toggleConnection = async (integration: Integration) => {
+    if (integration.isConnected) {
+      // Disconnect: MVP does not support delete; close modal
+      setSelectedIntegration(null);
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/v1/connectors?workspace_id=${WORKSPACE_ID}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: integration.name,
+          connector_type: integration.connectorType,
+        }),
+      });
+      if (res.ok) {
+        const created = await res.json();
+        setConnectors((prev) => [...prev, { id: created.id, name: created.name, connector_type: created.connector_type }]);
+        setSelectedIntegration(null);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.detail || 'Failed to add connector.');
       }
-      return item;
-    });
-    
-    // For now, just close the modal
-    setSelectedIntegration(null);
+    } catch {
+      alert('Failed to add connector.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -290,10 +326,11 @@ const IntegrationsPage: React.FC = () => {
                   </>
                 ) : (
                   <button 
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50"
                     onClick={() => toggleConnection(selectedIntegration)}
+                    disabled={loading}
                   >
-                    Connect
+                    {loading ? 'Connecting...' : 'Connect'}
                   </button>
                 )}
               </div>

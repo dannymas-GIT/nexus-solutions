@@ -1,6 +1,9 @@
 import os
 import secrets
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
+
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 from pydantic import AnyHttpUrl, validator
 from pydantic_settings import BaseSettings
 
@@ -23,19 +26,19 @@ class Settings(BaseSettings):
         raise ValueError(v)
 
     # Project Configuration
-    PROJECT_NAME: str = "Nexus Business Builder"
+    PROJECT_NAME: str = "Nexus Solutions"
     
-    # Azure AD Configuration
-    AZURE_TENANT_ID: Optional[str] = "8fe97a37-6956-4bc2-8253-f97f816bc733"
-    AZURE_CLIENT_ID: Optional[str] = "4bc94816-f1d4-4cff-8bf7-e4efb061d662"
-    CERT_PATH: Optional[str] = "/opt/projects/NexusBusinessBuilder/certificates/NexusBusinessAgent.pfx"
-    CERT_PASSWORD: Optional[str] = "NexusAgent123"
+    # Azure AD Configuration - MUST be set via .env in production
+    AZURE_TENANT_ID: Optional[str] = None
+    AZURE_CLIENT_ID: Optional[str] = None
+    CERT_PATH: Optional[str] = None
+    CERT_PASSWORD: Optional[str] = None
     
     # Graph API Configuration
     GRAPH_API_VERSION: str = "v1.0"
     
     # Storage Configuration
-    STORAGE_PROVIDER: str = "onedrive"  # Options: onedrive, sharepoint, local
+    STORAGE_PROVIDER: str = "local"  # Options: onedrive, sharepoint, local
     
     # SharePoint settings
     SHAREPOINT_SITE_NAME: Optional[str] = None
@@ -44,13 +47,16 @@ class Settings(BaseSettings):
     # OneDrive settings
     ONEDRIVE_ROOT_FOLDER: str = "NexusSolutions"
     
-    # Local storage settings
-    LOCAL_STORAGE_PATH: str = "/opt/projects/NexusBusinessBuilder/backend/output"
+    # Local storage - project-relative
+    LOCAL_STORAGE_PATH: str = str(_PROJECT_ROOT / "backend" / "output")
     
-    # Template paths
-    DOCX_TEMPLATES_PATH: str = "./data/templates/docx"
-    PPTX_TEMPLATES_PATH: str = "./data/templates/pptx"
-    PDF_TEMPLATES_PATH: str = "./data/templates/pdf"
+    # Template paths - relative to project root
+    DOCX_TEMPLATES_PATH: str = str(_PROJECT_ROOT / "data" / "templates" / "docx")
+    PPTX_TEMPLATES_PATH: str = str(_PROJECT_ROOT / "data" / "templates" / "pptx")
+    PDF_TEMPLATES_PATH: str = str(_PROJECT_ROOT / "data" / "templates" / "pdf")
+    
+    # Workspace root for document tree / file access
+    WORKSPACE_ROOT: str = str(_PROJECT_ROOT)
     
     # OpenAI Configuration
     OPENAI_API_KEY: Optional[str] = None

@@ -13,10 +13,11 @@ from ...services.document import get_document_service
 from ...services.document.base import DocumentService
 from ...services.storage import get_storage_service
 from ...services.storage.base import StorageService
+from ...core.config import settings
 
 # Define base directories allowed for file access
 ALLOWED_DIRS = ["marketing", "presentations"]
-WORKSPACE_ROOT = Path("/opt/projects/NexusBusinessBuilder") # Adjust if needed
+WORKSPACE_ROOT = Path(settings.WORKSPACE_ROOT)
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 logger = logging.getLogger(__name__)
@@ -95,8 +96,7 @@ async def generate_document(
     document_type: str = Query(..., description="Document type (docx, pptx, pdf)"),
     storage_path: Optional[str] = Query(None, description="Path where to store the document in storage (relative to root folder)"),
     data: Dict[str, Any] = Body(..., description="Data to populate the template with"),
-    document_service: DocumentService = Depends(lambda: get_document_service(None)),
-    storage_service: StorageService = Depends(get_storage_service)
+    storage_service: StorageService = Depends(get_storage_service),
 ):
     """
     Generate a document from a template and data.
@@ -108,58 +108,51 @@ async def generate_document(
         data: Data to populate the template with
     """
     try:
-        # Log the start of the operation
         logger.info(f"Starting document generation: {template_name}.{document_type}")
-        
-        # Get the appropriate document service
+
         document_service = get_document_service(document_type)
         logger.info(f"Document service obtained: {document_service.__class__.__name__}")
-        
-        # Create a temporary directory for the output
-        with tempfile.TemporaryDirectory() as temp_dir:
-            logger.info(f"Created temporary directory: {temp_dir}")
-            
-            # Generate output filename
-            temp_output_path = Path(temp_dir) / f"{template_name}_output.{document_type}"
-            logger.info(f"Temporary output path: {temp_output_path}")
-            
-            try:
-                # Generate the document
-                logger.info(f"Generating document with data: {data}")
-                output_file = await document_service.generate_document(
-                    template_name=template_name,
-                    data=data,
-                    output_path=str(temp_output_path)
+
+        # Use NamedTemporaryFile with delete=False so file survives until we read it for response.
+        # Temp dir would be deleted on context exit; file must exist when FileResponse is sent.
+        fd, temp_path = tempfile.mkstemp(suffix=f".{document_type}")
+        os.close(fd)
+        temp_output_path = Path(temp_path)
+
+        try:
+            output_file = await document_service.generate_document(
+                template_name=template_name,
+                data=data,
+                output_path=str(temp_output_path)
+            )
+            logger.info(f"Document generated: {output_file}")
+
+            if not output_file.exists():
+                raise FileNotFoundError(f"Generated file not found: {output_file}")
+
+            if storage_path:
+                file_url = await storage_service.upload_file(output_file, storage_path)
+                return {
+                    "message": "Document generated and stored successfully",
+                    "file_url": file_url,
+                    "storage_path": storage_path
+                }
+            else:
+                # Read file into memory for response; then delete temp file
+                content = output_file.read_bytes()
+                output_file.unlink(missing_ok=True)
+                from fastapi.responses import Response
+                download_name = f"{template_name}_output.{document_type}"
+                return Response(
+                    content=content,
+                    media_type=f"application/{document_type}",
+                    headers={"Content-Disposition": f'attachment; filename="{download_name}"'}
                 )
-                logger.info(f"Document generated: {output_file}")
-                
-                # Check if the file exists
-                if not output_file.exists():
-                    logger.error(f"Generated file does not exist: {output_file}")
-                    raise FileNotFoundError(f"Generated file not found: {output_file}")
-                
-                # Upload to storage if storage_path is provided
-                if storage_path:
-                    logger.info(f"Uploading document to storage: {storage_path}")
-                    file_url = await storage_service.upload_file(output_file, storage_path)
-                    logger.info(f"Document uploaded to storage: {file_url}")
-                    return {
-                        "message": "Document generated and stored successfully",
-                        "file_url": file_url,
-                        "storage_path": storage_path
-                    }
-                else:
-                    # Return the file
-                    logger.info(f"Returning file directly: {output_file}")
-                    return FileResponse(
-                        path=output_file,
-                        filename=output_file.name,
-                        media_type=f"application/{document_type}"
-                    )
-            except Exception as e:
-                logger.error(f"Error during document generation or storage: {str(e)}")
-                logger.error(traceback.format_exc())
-                raise e
+        except Exception as e:
+            temp_output_path.unlink(missing_ok=True)
+            logger.error(f"Error during document generation or storage: {str(e)}")
+            logger.error(traceback.format_exc())
+            raise e
     
     except FileNotFoundError as e:
         logger.exception(f"File not found: {e}")
@@ -284,8 +277,8 @@ async def get_file_content(file_path: str):
 
         # 2. Check if the path starts with one of the allowed directories
         relative_path = full_path.relative_to(WORKSPACE_ROOT)
-        logger.info(f"    Calculated relative path: {relative_path}") # Log relative path
-        if not any(relative_path.is_relative_to(allowed_dir) for allowed_dir in ALLOWED_DIRS):
+        logger.info(f"    Calculated relative path: {relative_path}")
+        if not (relative_path.parts and relative_path.parts[0] in ALLOWED_DIRS):
             logger.warning(f"    Access Denied (Outside Allowed Dirs): {relative_path}")
             raise HTTPException(status_code=403, detail="Access denied: Path is outside allowed directories.")
         
