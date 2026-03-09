@@ -1,7 +1,8 @@
-import React from 'react';
-import { Card } from '@/components/ui/Card'; // Import Card only
-import { Button } from '@/components/ui/Button';
-import { Target, DollarSign, TrendingUp } from 'lucide-react'; // Example icons
+import React, { useState, useEffect } from 'react';
+import { Card } from '../../components/ui/Card';
+import { Button } from '../../components/ui/Button';
+import { Target, DollarSign, TrendingUp } from 'lucide-react';
+import { api, WorkspaceOut } from '../../lib/api';
 
 // Placeholder type for a KPI - we can refine this later
 interface KpiDefinition {
@@ -62,13 +63,18 @@ const recommendedKpis: KpiDefinition[] = [
 ];
 
 const SetKpisPage: React.FC = () => {
-  const [kpis, setKpis] = React.useState<{ id: number; name: string; metric_key: string; target_value: number | null }[]>([]);
-  const [loading, setLoading] = React.useState(false);
-  const WORKSPACE_ID = 1; // Default workspace for MVP
+  const [kpis, setKpis] = useState<{ id: number; name: string; metric_key: string; target_value: number | null }[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [workspaceId, setWorkspaceId] = useState<number | null>(null);
 
-  React.useEffect(() => {
-    fetch(`/api/v1/kpis?workspace_id=${WORKSPACE_ID}`)
-      .then((r) => (r.ok ? r.json() : []))
+  useEffect(() => {
+    api<WorkspaceOut[]>('/workspaces')
+      .then((ws) => {
+        const intel = ws.find((w) => w.workspace_type === 'intelligence');
+        setWorkspaceId(intel?.id ?? null);
+        if (!intel) return [];
+        return api<{ id: number; name: string; metric_key: string; target_value: number | null }[]>(`/kpis?workspace_id=${intel.id}`);
+      })
       .then(setKpis)
       .catch(() => setKpis([]));
   }, []);
@@ -76,11 +82,14 @@ const SetKpisPage: React.FC = () => {
   const handleAddKpi = async (kpiId: string) => {
     const kpi = recommendedKpis.find((k) => k.id === kpiId);
     if (!kpi) return;
+    if (workspaceId === null) {
+      alert('No Intelligence workspace. Create one from Choose workspace.');
+      return;
+    }
     setLoading(true);
     try {
-      const res = await fetch(`/api/v1/kpis?workspace_id=${WORKSPACE_ID}`, {
+      const created = await api<{ id: number; name: string; metric_key: string; target_value: number | null }>(`/kpis?workspace_id=${workspaceId}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: kpi.name,
           metric_key: kpi.sourceField || kpi.id,
@@ -89,14 +98,8 @@ const SetKpisPage: React.FC = () => {
           description: kpi.description,
         }),
       });
-      if (res.ok) {
-        const created = await res.json();
-        setKpis((prev) => [...prev, created]);
-        alert(`KPI "${kpi.name}" added successfully`);
-      } else {
-        const err = await res.json().catch(() => ({}));
-        alert(err.detail || 'Failed to add KPI. Create a workspace first.');
-      }
+      setKpis((prev) => [...prev, created]);
+      alert(`KPI "${kpi.name}" added successfully`);
     } catch (e) {
       alert('Failed to add KPI');
     } finally {

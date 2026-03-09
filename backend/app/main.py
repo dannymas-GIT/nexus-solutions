@@ -57,13 +57,14 @@ async def root():
     }
 
 # Import and include routes
-from .api.routes import storage, documents, auth, workspaces, intake, kpis, connectors
+from .api.routes import storage, documents, auth, workspaces, organizations, intake, kpis, connectors
 from .core.database import init_db
 
 app.include_router(storage.router, prefix="/api/v1")
 app.include_router(documents.router, prefix="/api/v1")
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(workspaces.router, prefix="/api/v1")
+app.include_router(organizations.router, prefix="/api/v1")
 app.include_router(intake.router, prefix="/api/v1")
 app.include_router(kpis.router, prefix="/api/v1")
 app.include_router(connectors.router, prefix="/api/v1")

@@ -16,7 +16,7 @@ const LaunchLandingPage: React.FC = () => {
   }, []);
 
   const handleGetStarted = () => {
-    navigate('/choose-workspace');
+    navigate('/signup?path=launch');
   };
 
   return (

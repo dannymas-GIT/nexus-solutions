@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Filter, Plus, ExternalLink, Check, X, AlertCircle, Grid, Settings, RefreshCw } from 'lucide-react';
+import { api, WorkspaceOut } from '../../lib/api';
 
 interface Integration {
   id: string;
@@ -13,8 +14,6 @@ interface Integration {
   isNew: boolean;
 }
 
-const WORKSPACE_ID = 1;
-
 const IntegrationsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [_setActiveCategory] = useState<string>('All');
@@ -22,10 +21,16 @@ const IntegrationsPage: React.FC = () => {
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
   const [connectors, setConnectors] = useState<{ id: number; name: string; connector_type: string }[]>([]);
   const [loading, setLoading] = useState(false);
+  const [workspaceId, setWorkspaceId] = useState<number | null>(null);
 
-  React.useEffect(() => {
-    fetch(`/api/v1/connectors?workspace_id=${WORKSPACE_ID}`)
-      .then((r) => (r.ok ? r.json() : []))
+  useEffect(() => {
+    api<WorkspaceOut[]>('/workspaces')
+      .then((ws) => {
+        const intel = ws.find((w) => w.workspace_type === 'intelligence');
+        setWorkspaceId(intel?.id ?? null);
+        if (!intel) return [];
+        return api<{ id: number; name: string; connector_type: string }[]>(`/connectors?workspace_id=${intel.id}`);
+      })
       .then(setConnectors)
       .catch(() => setConnectors([]));
   }, []);
@@ -177,30 +182,26 @@ const IntegrationsPage: React.FC = () => {
 
   const toggleConnection = async (integration: Integration) => {
     if (integration.isConnected) {
-      // Disconnect: MVP does not support delete; close modal
       setSelectedIntegration(null);
+      return;
+    }
+    if (workspaceId === null) {
+      alert('No Intelligence workspace. Create one from Choose workspace.');
       return;
     }
     setLoading(true);
     try {
-      const res = await fetch(`/api/v1/connectors?workspace_id=${WORKSPACE_ID}`, {
+      const created = await api<{ id: number; name: string; connector_type: string }>(`/connectors?workspace_id=${workspaceId}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: integration.name,
           connector_type: integration.connectorType,
         }),
       });
-      if (res.ok) {
-        const created = await res.json();
-        setConnectors((prev) => [...prev, { id: created.id, name: created.name, connector_type: created.connector_type }]);
-        setSelectedIntegration(null);
-      } else {
-        const err = await res.json().catch(() => ({}));
-        alert(err.detail || 'Failed to add connector.');
-      }
-    } catch {
-      alert('Failed to add connector.');
+      setConnectors((prev) => [...prev, { id: created.id, name: created.name, connector_type: created.connector_type }]);
+      setSelectedIntegration(null);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to add connector.');
     } finally {
       setLoading(false);
     }

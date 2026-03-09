@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Card } from '../components/ui/Card';
+import { useAuth } from '../context/AuthContext';
 
 const SettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('account');
+  const { user } = useAuth();
 
   return (
     <div className="h-full">
@@ -99,7 +101,9 @@ const SettingsPage: React.FC = () => {
                     <input
                       type="email"
                       className="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring focus:ring-brand-primary focus:ring-opacity-50"
-                      defaultValue="john@example.com"
+                      defaultValue={user?.email ?? ''}
+                      readOnly
+                      aria-label="Email (from account)"
                     />
                   </div>
                   
@@ -110,7 +114,8 @@ const SettingsPage: React.FC = () => {
                     <input
                       type="text"
                       className="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring focus:ring-brand-primary focus:ring-opacity-50"
-                      defaultValue="John Doe"
+                      defaultValue={user?.full_name ?? ''}
+                      placeholder="Your name"
                     />
                   </div>
                   

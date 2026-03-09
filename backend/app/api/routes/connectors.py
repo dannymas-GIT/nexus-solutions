@@ -1,4 +1,4 @@
-"""Connector routes - data source connections for Nexus Intelligence."""
+"""Connector routes - data source connections for Nexus Intelligence (workspace-scoped, auth required)."""
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -6,36 +6,9 @@ from pydantic import BaseModel
 from ...core.database import get_db
 from ...models.connector import Connector
 from ...models.workspace import Workspace
-from ..deps import get_current_user_optional, get_password_hash
-from ...models.user import User
+from ..deps import require_workspace_access
 
 router = APIRouter(prefix="/connectors", tags=["connectors"])
-
-
-def _ensure_default_workspace(db: Session) -> int:
-    """Ensure default workspace exists; return its id."""
-    from ...models.workspace import WorkspaceType
-    ws = db.query(Workspace).filter(Workspace.id == 1).first()
-    if ws:
-        return 1
-    user = db.query(User).first()
-    if not user:
-        user = User(
-            email="demo@nexus.local",
-            hashed_password="dummy",
-            full_name="Demo User",
-            is_active=True,
-            is_superuser=False,
-        )
-        user.hashed_password = get_password_hash("demo123")
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-    ws = Workspace(name="Default Intelligence", workspace_type=WorkspaceType.intelligence, owner_id=user.id)
-    db.add(ws)
-    db.commit()
-    db.refresh(ws)
-    return ws.id
 
 
 class ConnectorCreate(BaseModel):
@@ -56,13 +29,12 @@ class ConnectorOut(BaseModel):
 
 @router.get("", response_model=list[ConnectorOut])
 def list_connectors(
-    workspace_id: int | None = None,
+    workspace_id: int,
     db: Session = Depends(get_db),
-    current_user: User | None = Depends(get_current_user_optional),
+    _ws: Workspace = Depends(require_workspace_access),
 ):
-    """List connectors. For MVP: use default workspace if none specified."""
-    wid = workspace_id or _ensure_default_workspace(db)
-    connectors = db.query(Connector).filter(Connector.workspace_id == wid).all()
+    """List connectors for the given workspace. User must have access via org membership."""
+    connectors = db.query(Connector).filter(Connector.workspace_id == workspace_id).all()
     return [
         ConnectorOut(
             id=c.id,
@@ -78,17 +50,13 @@ def list_connectors(
 @router.post("", response_model=ConnectorOut)
 def create_connector(
     data: ConnectorCreate,
-    workspace_id: int | None = None,
+    workspace_id: int,
     db: Session = Depends(get_db),
-    current_user: User | None = Depends(get_current_user_optional),
+    _ws: Workspace = Depends(require_workspace_access),
 ):
-    """Create a connector. For MVP: use default workspace if none specified."""
-    wid = workspace_id or _ensure_default_workspace(db)
-    ws = db.query(Workspace).filter(Workspace.id == wid).first()
-    if not ws:
-        raise HTTPException(404, detail="Workspace not found")
+    """Create a connector in the given workspace. User must have access via org membership."""
     conn = Connector(
-        workspace_id=wid,
+        workspace_id=workspace_id,
         name=data.name,
         connector_type=data.connector_type,
         status="pending",
@@ -101,5 +69,5 @@ def create_connector(
         name=conn.name,
         connector_type=conn.connector_type,
         status=conn.status,
-        last_sync_at=None,
+        last_sync_at=conn.last_sync_at.isoformat() if conn.last_sync_at else None,
     )

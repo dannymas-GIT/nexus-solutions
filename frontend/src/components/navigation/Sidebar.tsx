@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Settings, ChevronLeft, LogOut, Search, ChevronRight, Folder, Rocket, Database } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
+import { useAuth } from '../../context/AuthContext';
 
 interface NavItem {
   icon: React.ReactNode;
@@ -15,7 +16,11 @@ interface SidebarProps {
   userEmail?: string;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ userName = 'John Doe', userEmail = 'john@example.com' }) => {
+const Sidebar: React.FC<SidebarProps> = ({ userName: userNameProp, userEmail: userEmailProp }) => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const userName = userNameProp ?? user?.full_name ?? 'User';
+  const userEmail = userEmailProp ?? user?.email ?? '';
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({
@@ -200,6 +205,16 @@ const Sidebar: React.FC<SidebarProps> = ({ userName = 'John Doe', userEmail = 'j
                 <LogOut size={16} className="mr-2" />
                 <span>Switch workspace</span>
               </Link>
+            </div>
+            <div className="mt-2 flex items-center text-gray-600 hover:text-gray-900">
+              <button
+                type="button"
+                onClick={() => { logout(); navigate('/'); }}
+                className="flex items-center text-sm"
+              >
+                <LogOut size={16} className="mr-2" />
+                <span>Sign out</span>
+              </button>
             </div>
           </>
         )}

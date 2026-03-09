@@ -62,8 +62,16 @@ const SplashPage: React.FC = () => {
             </button>
           </div>
 
-          <p className="mt-12 text-blue-300/80 text-sm">
-            Already have an account? <button onClick={() => navigate('/choose-workspace')} className="text-indigo-300 hover:text-indigo-200 underline">Continue</button>
+          <p className="mt-12 text-blue-300/80 text-sm flex items-center justify-center gap-4 flex-wrap">
+            <span>Already have an account?</span>
+            <button type="button" onClick={() => navigate('/login')} className="text-indigo-300 hover:text-indigo-200 underline font-medium">
+              Log in
+            </button>
+            <span className="text-blue-300/60">|</span>
+            <span>New here?</span>
+            <button type="button" onClick={() => navigate('/signup')} className="text-indigo-300 hover:text-indigo-200 underline font-medium">
+              Create account
+            </button>
           </p>
         </div>
       </div>

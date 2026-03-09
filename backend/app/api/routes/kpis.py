@@ -1,4 +1,4 @@
-"""KPI routes - define and list KPIs for Nexus Intelligence."""
+"""KPI routes - define and list KPIs for Nexus Intelligence (workspace-scoped, auth required)."""
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -6,8 +6,7 @@ from pydantic import BaseModel
 from ...core.database import get_db
 from ...models.kpi import Kpi
 from ...models.workspace import Workspace
-from ..deps import get_current_user_optional
-from ...models.user import User
+from ..deps import get_current_user, require_workspace_access
 
 router = APIRouter(prefix="/kpis", tags=["kpis"])
 
@@ -32,42 +31,14 @@ class KpiOut(BaseModel):
         from_attributes = True
 
 
-def _ensure_default_workspace(db: Session) -> int:
-    """Ensure default workspace exists; return its id."""
-    from ...models.workspace import WorkspaceType
-    ws = db.query(Workspace).filter(Workspace.id == 1).first()
-    if ws:
-        return 1
-    user = db.query(User).first()
-    if not user:
-        user = User(
-            email="demo@nexus.local",
-            hashed_password="dummy",
-            full_name="Demo User",
-            is_active=True,
-            is_superuser=False,
-        )
-        from ..deps import get_password_hash
-        user.hashed_password = get_password_hash("demo123")
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-    ws = Workspace(name="Default Intelligence", workspace_type=WorkspaceType.intelligence, owner_id=user.id)
-    db.add(ws)
-    db.commit()
-    db.refresh(ws)
-    return ws.id
-
-
 @router.get("", response_model=list[KpiOut])
 def list_kpis(
-    workspace_id: int | None = None,
+    workspace_id: int,
     db: Session = Depends(get_db),
-    current_user: User | None = Depends(get_current_user_optional),
+    _ws: Workspace = Depends(require_workspace_access),
 ):
-    """List KPIs. For MVP: use default workspace if none specified."""
-    wid = workspace_id or _ensure_default_workspace(db)
-    kpis = db.query(Kpi).filter(Kpi.workspace_id == wid).all()
+    """List KPIs for the given workspace. User must have access via org membership."""
+    kpis = db.query(Kpi).filter(Kpi.workspace_id == workspace_id).all()
     return [
         KpiOut(
             id=k.id,
@@ -84,17 +55,13 @@ def list_kpis(
 @router.post("", response_model=KpiOut)
 def create_kpi(
     data: KpiCreate,
-    workspace_id: int | None = None,
+    workspace_id: int,
     db: Session = Depends(get_db),
-    current_user: User | None = Depends(get_current_user_optional),
+    _ws: Workspace = Depends(require_workspace_access),
 ):
-    """Create a KPI. For MVP: use default workspace if none specified."""
-    wid = workspace_id or _ensure_default_workspace(db)
-    ws = db.query(Workspace).filter(Workspace.id == wid).first()
-    if not ws:
-        raise HTTPException(404, detail="Workspace not found")
+    """Create a KPI in the given workspace. User must have access via org membership."""
     kpi = Kpi(
-        workspace_id=wid,
+        workspace_id=workspace_id,
         name=data.name,
         metric_key=data.metric_key,
         target_value=data.target_value,

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, ChevronDown, Search, Bell, User, HelpCircle, Rocket, Database } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
+import { useAuth } from '../../context/AuthContext';
 
 interface NavItem {
   label: string;
@@ -15,6 +16,7 @@ const Navbar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { setWorkspace, isLaunch, isIntelligence } = useWorkspace();
+  const { user, logout } = useAuth();
 
   // Launch workspace navigation
   const launchNavItems: NavItem[] = [
@@ -110,6 +112,7 @@ const Navbar: React.FC = () => {
   const handleDropdownClick = (e: React.MouseEvent) => e.stopPropagation();
 
   const showAppNav = location.pathname !== '/' && location.pathname !== '/choose-workspace';
+  const isPublicPage = ['/', '/login', '/signup', '/launch-landing', '/intelligence-landing'].includes(location.pathname);
 
   return (
     <nav className="fixed top-0 w-full z-50 transition-all duration-300 bg-white shadow-md">
@@ -176,7 +179,36 @@ const Navbar: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-4 pr-6">
-            {showAppNav && (
+            {/* Public pages: show Log in + Create account when not logged in, or Continue when logged in */}
+            {isPublicPage && (
+              <div className="flex items-center gap-3">
+                {user ? (
+                  <Link
+                    to="/choose-workspace"
+                    className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+                  >
+                    Continue to app
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                    >
+                      Log in
+                    </Link>
+                    <Link
+                      to="/signup"
+                      className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+                    >
+                      Create account
+                    </Link>
+                  </>
+                )}
+              </div>
+            )}
+
+            {showAppNav && user && (
               <button
                 onClick={handleSwitchWorkspace}
                 className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-colors"
@@ -188,7 +220,7 @@ const Navbar: React.FC = () => {
               </button>
             )}
 
-            {showAppNav && (
+            {showAppNav && user && (
               <>
                 <div className="hidden md:flex relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -221,8 +253,8 @@ const Navbar: React.FC = () => {
                       onClick={handleDropdownClick}
                     >
                       <div className="px-4 py-2 border-b border-gray-100">
-                        <p className="text-sm font-medium text-gray-900">John Doe</p>
-                        <p className="text-xs text-gray-500">john@example.com</p>
+                        <p className="text-sm font-medium text-gray-900">{user.full_name || user.email || 'User'}</p>
+                        <p className="text-xs text-gray-500">{user.email}</p>
                       </div>
                       <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                         Your Profile
@@ -236,9 +268,12 @@ const Navbar: React.FC = () => {
                       >
                         Switch workspace
                       </button>
-                      <Link to="/logout" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      <button
+                        onClick={() => { logout(); navigate('/'); setOpenDropdown(null); }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
                         Sign out
-                      </Link>
+                      </button>
                     </div>
                   )}
                 </div>

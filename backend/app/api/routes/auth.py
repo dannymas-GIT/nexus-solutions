@@ -1,10 +1,13 @@
-"""Auth routes - simple JWT-based auth for MVP."""
+"""Auth routes - JWT-based auth with optional onboarding path."""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
 
 from ...core.database import get_db
 from ...models.user import User
+from ...models.organization import Organization
+from ...models.organization_membership import OrganizationMembership, OrgRole
+from ...models.workspace import Workspace, WorkspaceType
 from ..deps import get_password_hash, verify_password, create_access_token, get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -14,6 +17,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     full_name: str | None = None
+    onboarding_path: str | None = None  # "launch" | "intelligence" to create org + workspace
 
 
 class UserLogin(BaseModel):
@@ -37,7 +41,7 @@ class UserOut(BaseModel):
 
 @router.post("/register", response_model=UserOut)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
-    """Register a new user."""
+    """Register a new user. Optionally create org and first workspace from onboarding_path."""
     existing = db.query(User).filter(User.email == user_in.email).first()
     if existing:
         raise HTTPException(
@@ -50,6 +54,16 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
         full_name=user_in.full_name,
     )
     db.add(user)
+    db.flush()
+    if user_in.onboarding_path in ("launch", "intelligence"):
+        org_name = user_in.full_name or user_in.email.split("@")[0]
+        org = Organization(name=org_name + "'s Workspace")
+        db.add(org)
+        db.flush()
+        db.add(OrganizationMembership(organization_id=org.id, user_id=user.id, role=OrgRole.owner))
+        ws_type = WorkspaceType.launch if user_in.onboarding_path == "launch" else WorkspaceType.intelligence
+        ws = Workspace(name=org_name, workspace_type=ws_type, organization_id=org.id)
+        db.add(ws)
     db.commit()
     db.refresh(user)
     return user

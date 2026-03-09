@@ -1,24 +1,17 @@
-from sqlalchemy import String, Enum, DateTime, ForeignKey, Integer
+"""Organization model - top-level account/team container."""
+from sqlalchemy import String, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime
-import enum
 
 from .base import Base
 
 
-class WorkspaceType(str, enum.Enum):
-    launch = "launch"
-    intelligence = "intelligence"
+class Organization(Base):
+    """Organization (company/team) - owns workspaces."""
 
-
-class Workspace(Base):
-    __tablename__ = "workspaces"
+    __tablename__ = "organizations"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    workspace_type: Mapped[WorkspaceType] = mapped_column(
-        Enum(WorkspaceType), nullable=False, index=True
-    )
-    organization_id: Mapped[int] = mapped_column(ForeignKey("organizations.id"), nullable=False, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)

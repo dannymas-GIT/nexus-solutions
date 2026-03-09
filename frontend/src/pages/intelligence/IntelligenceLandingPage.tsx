@@ -16,7 +16,7 @@ const IntelligenceLandingPage: React.FC = () => {
   }, []);
 
   const handleGetStarted = () => {
-    navigate('/choose-workspace');
+    navigate('/signup?path=intelligence');
   };
 
   return (

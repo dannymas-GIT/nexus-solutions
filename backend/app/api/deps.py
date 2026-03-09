@@ -1,7 +1,8 @@
 """FastAPI dependencies for auth and database."""
+from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, APIKeyHeader
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -9,6 +10,9 @@ from passlib.context import CryptContext
 from ..core.config import settings
 from ..core.database import get_db
 from ..models.user import User
+from ..models.organization import Organization
+from ..models.organization_membership import OrganizationMembership
+from ..models.workspace import Workspace
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -24,6 +28,8 @@ def get_password_hash(password: str) -> str:
 
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode["exp"] = expire
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm="HS256")
 
 
@@ -59,3 +65,46 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
+
+
+def _org_ids_for_user(db: Session, user_id: int) -> list[int]:
+    rows = db.query(OrganizationMembership.organization_id).filter(
+        OrganizationMembership.user_id == user_id
+    ).distinct().all()
+    return [r[0] for r in rows]
+
+
+async def get_current_organization_optional(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Optional[Organization]:
+    """Return first organization the current user belongs to, or None."""
+    org_ids = _org_ids_for_user(db, current_user.id)
+    if not org_ids:
+        return None
+    return db.query(Organization).filter(Organization.id == org_ids[0]).first()
+
+
+async def get_current_organization(
+    org: Optional[Organization] = Depends(get_current_organization_optional),
+) -> Organization:
+    """Require user to belong to at least one organization."""
+    if org is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No organization. Complete onboarding or create a workspace.",
+        )
+    return org
+
+
+def require_workspace_access(
+    workspace_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Workspace:
+    """Ensure current user can access the workspace (via org membership)."""
+    org_ids = _org_ids_for_user(db, current_user.id)
+    ws = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+    if not ws or ws.organization_id not in org_ids:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workspace not found")
+    return ws
