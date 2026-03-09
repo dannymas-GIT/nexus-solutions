@@ -38,11 +38,11 @@ jobs:
 
       - name: Lint frontend
         if: hashFiles('package.json') != ''
-        run: npm run lint || true
+        run: npm run lint
 
       - name: Build frontend
         if: hashFiles('package.json') != ''
-        run: npm run build || true
+        run: npm run build
 
       - name: Setup Python
         if: hashFiles('**/requirements*.txt') != '' || hashFiles('**/pyproject.toml') != ''
@@ -54,8 +54,7 @@ jobs:
         if: hashFiles('**/requirements*.txt') != '' || hashFiles('**/pyproject.toml') != ''
         run: |
           pip install ruff 2>/dev/null || true
-          ruff check . --output-format=concise 2>/dev/null || true
-        continue-on-error: true
+          ruff check . --output-format=concise
 
   trigger-pipeline:
     runs-on: ubuntu-latest
@@ -78,7 +77,7 @@ jobs:
             --arg branch "${{ github.ref_name }}" \
             --arg sha "${{ github.sha }}" \
             '{app: $app, repo: $repo, branch: $branch, sha: $sha}')
-          curl -sS -X POST "$URL" \
+          curl -sfS -X POST "$URL" \
             -H "Content-Type: application/json" \
             -H "X-Webhook-Secret: $WEBHOOK_SECRET" \
             -d "$PAYLOAD"
