@@ -60,7 +60,6 @@ jobs:
   trigger-pipeline:
     runs-on: ubuntu-latest
     needs: build
-    if: ${{ secrets.PIPELINE_WEBHOOK_URL != '' && secrets.PIPELINE_WEBHOOK_SECRET != '' && secrets.APP_SLUG != '' }}
     steps:
       - name: Trigger mission-control pipeline
         env:
@@ -68,6 +67,10 @@ jobs:
           WEBHOOK_SECRET: ${{ secrets.PIPELINE_WEBHOOK_SECRET }}
           APP_SLUG: ${{ secrets.APP_SLUG }}
         run: |
+          if [ -z "$WEBHOOK_URL" ] || [ -z "$WEBHOOK_SECRET" ] || [ -z "$APP_SLUG" ]; then
+            echo "Skipping mission-control trigger because required secrets are missing."
+            exit 0
+          fi
           URL="${WEBHOOK_URL%/}/api/pipeline/trigger"
           PAYLOAD=$(jq -n \
             --arg app "$APP_SLUG" \
