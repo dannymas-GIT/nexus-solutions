@@ -1,0 +1,81 @@
+# Pipeline on Push - Runs on push to configured branches and triggers the mission-control pipeline.
+# Copy to your SaaS app repo (.github/workflows/pipeline-on-push.yml).
+#
+# Triggers on: main (production), develop (develop), staging (staging).
+# Branch -> environment mapping is defined in pipeline/apps/<app>.yaml workflow_policy.branch_mapping.
+#
+# Required repo secrets:
+#   PIPELINE_WEBHOOK_URL - Base URL of control-api (e.g. https://your-server.example.com)
+#   PIPELINE_WEBHOOK_SECRET - Must match PIPELINE_WEBHOOK_SECRET in ~/.openclaw/openclaw.env
+#   APP_SLUG - App slug matching pipeline/apps/<slug>.yaml (e.g. nexus-solutions)
+#
+# If PIPELINE_WEBHOOK_URL is not set, only lint/build run; the full agent pipeline
+# (security, logic-review, QA, UI audit) runs on the mission-control server via webhook.
+
+name: Pipeline on Push
+
+on:
+  push:
+    branches: [main, develop, staging]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        if: hashFiles('package.json') != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: hashFiles('package.json') != ''
+        run: npm ci
+
+      - name: Lint frontend
+        if: hashFiles('package.json') != ''
+        run: npm run lint || true
+
+      - name: Build frontend
+        if: hashFiles('package.json') != ''
+        run: npm run build || true
+
+      - name: Setup Python
+        if: hashFiles('**/requirements*.txt') != '' || hashFiles('**/pyproject.toml') != ''
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Lint backend
+        if: hashFiles('**/requirements*.txt') != '' || hashFiles('**/pyproject.toml') != ''
+        run: |
+          pip install ruff 2>/dev/null || true
+          ruff check . --output-format=concise 2>/dev/null || true
+        continue-on-error: true
+
+  trigger-pipeline:
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ secrets.PIPELINE_WEBHOOK_URL != '' && secrets.PIPELINE_WEBHOOK_SECRET != '' && secrets.APP_SLUG != '' }}
+    steps:
+      - name: Trigger mission-control pipeline
+        env:
+          WEBHOOK_URL: ${{ secrets.PIPELINE_WEBHOOK_URL }}
+          WEBHOOK_SECRET: ${{ secrets.PIPELINE_WEBHOOK_SECRET }}
+          APP_SLUG: ${{ secrets.APP_SLUG }}
+        run: |
+          URL="${WEBHOOK_URL%/}/api/pipeline/trigger"
+          PAYLOAD=$(jq -n \
+            --arg app "$APP_SLUG" \
+            --arg repo "${{ github.repository }}" \
+            --arg branch "${{ github.ref_name }}" \
+            --arg sha "${{ github.sha }}" \
+            '{app: $app, repo: $repo, branch: $branch, sha: $sha}')
+          curl -sS -X POST "$URL" \
+            -H "Content-Type: application/json" \
+            -H "X-Webhook-Secret: $WEBHOOK_SECRET" \
+            -d "$PAYLOAD"
