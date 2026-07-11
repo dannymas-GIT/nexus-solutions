@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Nexus">
+  <defs>
+    <linearGradient id="nx-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e40af"/>
+      <stop offset="100%" stop-color="#312e81"/>
+    </linearGradient>
+    <radialGradient id="nx-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="45%" stop-color="#93c5fd"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="url(#nx-bg)"/>
+  <!-- Data streams converging toward insight -->
+  <path d="M5 7 C12 14 14 15 16 16" stroke="#60a5fa" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M27 7 C20 14 18 15 16 16" stroke="#60a5fa" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M5 25 C12 18 14 17 16 16" stroke="#818cf8" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M27 25 C20 18 18 17 16 16" stroke="#818cf8" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <circle cx="16" cy="16" r="6.5" fill="url(#nx-glow)" opacity="0.9"/>
+  <circle cx="16" cy="16" r="2.2" fill="#ffffff"/>
+</svg>
