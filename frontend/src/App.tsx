@@ -9,6 +9,9 @@ import TeamPage from './pages/team/TeamPage';
 import TutorialsPage from './pages/tutorials/TutorialsPage';
 import IntegrationsPage from './pages/integrations/IntegrationsPage';
 import SetKpisPage from './pages/analysis-engine/SetKpisPage';
+import PortalPage from './pages/PortalPage';
+import ServicesPage from './pages/ServicesPage';
+import PackagesPage from './pages/PackagesPage';
 
 /**
  * App component
@@ -20,6 +23,10 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<SplashPage />} />
+        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/packages" element={<PackagesPage />} />
+        {/* Client deliverable review (magic link — no app chrome) */}
+        <Route path="/portal/:token" element={<PortalPage />} />
         
         {/* Main app routes with Layout */}
         <Route path="/dashboard" element={

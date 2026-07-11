@@ -45,6 +45,12 @@ app.add_middleware(
 async def health_check():
     return {"status": "healthy", "version": "0.1.0"}
 
+
+@app.get("/api/health")
+async def api_health_check():
+    """Alias for reverse-proxy health checks expecting /api/health."""
+    return {"status": "healthy", "version": "0.1.0"}
+
 # Root endpoint
 @app.get("/")
 async def root():
@@ -55,9 +61,12 @@ async def root():
     }
 
 # Import and include routes
-from .api.routes import storage, documents
+from .api.routes import documents, portal, storage
+
 app.include_router(storage.router, prefix="/api/v1")
 app.include_router(documents.router, prefix="/api/v1")
+# Client deliverable review (Income Scout → OpenClaw publish); API key + JWT auth inside router
+app.include_router(portal.router, prefix="/api")
 
 @app.on_event("startup")
 async def startup_event():
