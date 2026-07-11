@@ -1,6 +1,10 @@
+/**
+ * Nexus - corporate data convergence hub
+ * Routes businesses to Launch or Intelligence; agent services live at agent-ify.com
+ */
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { ChevronRight, Rocket, BarChart3, Users, Bot, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ChevronRight, Rocket, Database, BarChart3 } from 'lucide-react';
 import Navbar from '../components/navigation/Navbar';
 
 const SplashPage: React.FC = () => {
@@ -21,107 +25,72 @@ const SplashPage: React.FC = () => {
           <div className="absolute top-1/3 right-1/6 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-15 animate-blob animation-delay-2000"></div>
         </div>
 
-        <div className="relative z-10 container mx-auto px-6 pb-12 pt-32 flex flex-col min-h-screen">
-          <div className={`mb-10 flex justify-between items-center flex-wrap transition-all duration-1000 ${loaded ? 'opacity-100' : 'opacity-0 translate-y-4'}`}>
-            <div className="text-2xl md:text-3xl font-light tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-blue-200/70 to-blue-100/70">
-              Your AI Workforce
-            </div>
-            <div className="text-2xl md:text-3xl font-light tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-blue-200/70 to-blue-100/70">
-              Agent Services for Entrepreneurs
-            </div>
-          </div>
-
+        <div className="relative z-10 container mx-auto px-6 pb-12 pt-32 flex flex-col items-center min-h-screen">
           <div className={`text-center transition-all duration-1000 delay-300 ${loaded ? 'opacity-100' : 'opacity-0 translate-y-8'}`}>
-            <div className="flex flex-col items-center justify-center mb-8">
-              <div className="flex items-center justify-center">
-                <span className="text-blue-300/80 text-8xl font-serif mr-4 font-light italic">"</span>
-                <h1 className="text-7xl md:text-8xl lg:text-9xl font-bold tracking-wide text-white">
-                  nex<span className="text-blue-300">us</span>
-                </h1>
-                <span className="text-blue-300/80 text-8xl font-serif ml-4 rotate-180 font-light italic">"</span>
-              </div>
-            </div>
-
-            <p className="text-xl text-blue-100 font-light max-w-3xl mx-auto leading-relaxed mt-6">
-              <span className="text-blue-300 italic">nex·us</span> | Where specialized AI agents converge to help you succeed — from book launches and SEO to content engines and business planning. Rent outcomes, not hours.
+            <h1 className="text-7xl md:text-8xl font-bold tracking-wide text-white mb-4">
+              nex<span className="text-blue-300">us</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-blue-100/90 max-w-2xl mx-auto font-light italic">
+              When Data Converges, Insight Emerges.
+            </p>
+            <p className="text-base md:text-lg text-blue-200/80 max-w-3xl mx-auto mt-6 leading-relaxed">
+              Nexus streamlines data workflows for existing businesses — centralize scattered sources,
+              automate reporting, and target the KPIs that drive growth.
             </p>
           </div>
 
-          <div className="bg-[#1e3a8a] text-white py-12 px-8 md:px-16 lg:px-24 mt-12 rounded-xl shadow-lg border border-blue-800">
-            <div className="max-w-6xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <div className="space-y-6">
-                  <h3 className="text-xl font-semibold text-blue-300">AI Workforce Platform</h3>
-                  <p className="text-lg leading-relaxed">
-                    Nexus deploys specialized agents for real work — SEO audits, launch kits, email campaigns, industry research, and more. Each engagement produces artifacts you own. Agents learn from every delivery, so quality compounds over time.
-                  </p>
-                  <p className="text-lg leading-relaxed">
-                    <strong>For Authors:</strong> Book Launch Kits, platform SEO, and recurring content engines — designed for self-publishers ready to grow their readership.
-                  </p>
-                </div>
+          <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto mt-16 transition-all duration-700 delay-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}>
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="group flex flex-col items-center p-8 rounded-2xl bg-white/10 backdrop-blur border border-white/20 hover:bg-amber-500/20 hover:border-amber-400/40 transition-all duration-300"
+            >
+              <Rocket className="h-12 w-12 text-amber-400 mb-4 group-hover:scale-110 transition-transform" />
+              <span className="font-semibold text-lg mb-2">Business Planning</span>
+              <span className="text-blue-200/80 text-sm mb-4 text-center">Structured plans, templates, and team collaboration</span>
+              <span className="flex items-center text-amber-400 font-medium">
+                Get started
+                <ChevronRight className="w-5 h-5 ml-1" />
+              </span>
+            </button>
+            <button
+              onClick={() => navigate('/analysis-engine/set-kpis')}
+              className="group flex flex-col items-center p-8 rounded-2xl bg-white/10 backdrop-blur border border-white/20 hover:bg-indigo-500/20 hover:border-indigo-400/40 transition-all duration-300"
+            >
+              <Database className="h-12 w-12 text-indigo-400 mb-4 group-hover:scale-110 transition-transform" />
+              <span className="font-semibold text-lg mb-2">Analysis Engine</span>
+              <span className="text-blue-200/80 text-sm mb-4 text-center">Unify data sources, set KPIs, and surface insight</span>
+              <span className="flex items-center text-indigo-400 font-medium">
+                Set KPIs
+                <ChevronRight className="w-5 h-5 ml-1" />
+              </span>
+            </button>
+          </div>
 
-                <div className="space-y-6">
-                  <h3 className="text-xl font-semibold text-blue-300">Business Command Center</h3>
-                  <p className="text-lg leading-relaxed">
-                    Beyond agent services, Nexus remains your planning hub — business plans, KPIs, team collaboration, and client deliverable portals. The same infrastructure powers Author2Publish, Cultivar, and TheHelm.
-                  </p>
-                  <p className="text-lg leading-relaxed">
-                    <strong>For Entrepreneurs:</strong> Start with a service package, scale to full marketing automation, and track everything from one command center.
-                  </p>
-                </div>
-              </div>
+          <div className={`max-w-4xl mx-auto mt-12 grid md:grid-cols-3 gap-6 transition-all duration-700 delay-400 ${loaded ? 'opacity-100' : 'opacity-0'}`}>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-center">
+              <Database className="w-8 h-8 text-blue-300 mx-auto mb-3" />
+              <h3 className="font-semibold mb-1">Data Integration</h3>
+              <p className="text-sm text-blue-200/70">Connect CRM, finance, ops, and marketing into one command center.</p>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-center">
+              <BarChart3 className="w-8 h-8 text-indigo-300 mx-auto mb-3" />
+              <h3 className="font-semibold mb-1">KPI Dashboards</h3>
+              <p className="text-sm text-blue-200/70">Define metrics, track performance, and align teams on outcomes.</p>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-center">
+              <Rocket className="w-8 h-8 text-amber-300 mx-auto mb-3" />
+              <h3 className="font-semibold mb-1">Reporting Automation</h3>
+              <p className="text-sm text-blue-200/70">Replace manual spreadsheets with scheduled, audit-ready reports.</p>
             </div>
           </div>
 
-          <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 transition-all duration-1000 delay-600 my-12 ${loaded ? 'opacity-100' : 'opacity-0 translate-y-8'}`}>
-            <div className="bg-white/30 backdrop-blur-sm rounded-xl p-6 hover:bg-white/40 transition-all duration-300 border border-white/30 shadow-2xl">
-              <div className="bg-blue-500/20 rounded-full w-12 h-12 flex items-center justify-center mb-4">
-                <Bot className="h-6 w-6 text-blue-300" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Agent Services</h3>
-              <p className="text-blue-200/80">Productized packages delivered by specialized AI agents — SEO, content, launches, and research.</p>
-            </div>
-
-            <div className="bg-white/30 backdrop-blur-sm rounded-xl p-6 hover:bg-white/40 transition-all duration-300 border border-white/30 shadow-2xl">
-              <div className="bg-indigo-500/20 rounded-full w-12 h-12 flex items-center justify-center mb-4">
-                <Sparkles className="h-6 w-6 text-indigo-300" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Compounding Quality</h3>
-              <p className="text-blue-200/80">Every engagement distills into playbooks. Your agents get smarter with every project.</p>
-            </div>
-
-            <div className="bg-white/30 backdrop-blur-sm rounded-xl p-6 hover:bg-white/40 transition-all duration-300 border border-white/30 shadow-2xl">
-              <div className="bg-purple-500/20 rounded-full w-12 h-12 flex items-center justify-center mb-4">
-                <Users className="h-6 w-6 text-purple-300" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Client Portal</h3>
-              <p className="text-blue-200/80">Review deliverables, approve work, and access everything you own through a secure portal.</p>
-            </div>
-          </div>
-
-          <div className={`text-center transition-all duration-1000 delay-900 ${loaded ? 'opacity-100' : 'opacity-0'}`}>
-            <div className="flex flex-wrap gap-4 justify-center">
-              <button
-                onClick={() => navigate('/packages')}
-                className="px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg font-medium text-white shadow-lg hover:shadow-blue-500/25 transition-all duration-300 flex items-center group"
-              >
-                View Packages
-                <ChevronRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
-              <button
-                onClick={() => navigate('/services')}
-                className="px-8 py-4 bg-white/10 border border-white/30 rounded-lg font-medium text-white hover:bg-white/20 transition-all duration-300"
-              >
-                How It Works
-              </button>
-            </div>
-
-            <p className="mt-6 text-blue-300">
-              Authors: explore <a href="https://author2publish.com" className="text-indigo-300 hover:text-indigo-200 underline">Author2Publish</a>
-              {' · '}
-              Founders: try <a href="https://cultivar.life" className="text-indigo-300 hover:text-indigo-200 underline">Cultivar</a>
-            </p>
-          </div>
+          <p className={`mt-10 text-sm text-blue-300/70 text-center transition-all duration-700 delay-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}>
+            For entrepreneurs and solo founders, see{' '}
+            <a href="https://agent-ify.com" className="text-indigo-300 hover:text-indigo-200 underline">agent-ify.com</a>
+            {' '}for productized AI agent services.
+            <span className="mx-2">·</span>
+            <button type="button" onClick={() => navigate('/services')} className="text-blue-300/80 hover:text-blue-200 underline">Corporate services</button>
+          </p>
         </div>
       </div>
     </>
