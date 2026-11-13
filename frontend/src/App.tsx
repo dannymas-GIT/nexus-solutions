@@ -12,6 +12,10 @@ import SetKpisPage from './pages/analysis-engine/SetKpisPage';
 import PortalPage from './pages/PortalPage';
 import ServicesPage from './pages/ServicesPage';
 import PackagesPage from './pages/PackagesPage';
+import { PublicAnalyticsTracker } from './lib/components/analytics/PublicAnalyticsTracker';
+import { setPublicPaths } from './lib/analytics';
+
+setPublicPaths(['/', '/services', '/packages', '/portal']);
 
 /**
  * App component
@@ -21,6 +25,7 @@ import PackagesPage from './pages/PackagesPage';
 function App() {
   return (
     <Router>
+      <PublicAnalyticsTracker />
       <Routes>
         <Route path="/" element={<SplashPage />} />
         <Route path="/services" element={<ServicesPage />} />
