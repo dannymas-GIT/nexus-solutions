@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ArrowRight } from 'lucide-react';
+import { Menu, X, ArrowRight, LogIn } from 'lucide-react';
 
 const PUBLIC_LINKS = [
   { label: 'Overview', path: '/' },
   { label: 'Corporate Services', path: '/services' },
-  { label: 'Idea Studio', path: '/idea-studio' },
-  { label: 'Workspace', path: '/dashboard' },
 ];
 
 const MarketingNavbar: React.FC = () => {
@@ -63,6 +61,17 @@ const MarketingNavbar: React.FC = () => {
 
           <div className="hidden lg:flex items-center gap-3">
             <Link
+              to="/login"
+              className={`inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg border text-base font-medium transition-colors ${
+                location.pathname === '/login'
+                  ? 'border-blue-400 bg-white/15 text-white'
+                  : 'border-white/25 bg-white/5 hover:bg-white/15 text-blue-100 hover:text-white'
+              }`}
+            >
+              <LogIn className="w-4 h-4" />
+              Sign In
+            </Link>
+            <Link
               to="/request-audit"
               className="inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] rounded-lg bg-blue-500 hover:bg-blue-400 text-white text-base font-semibold shadow-sm transition-colors"
             >
@@ -102,6 +111,14 @@ const MarketingNavbar: React.FC = () => {
               </Link>
             );
           })}
+          <Link
+            to="/login"
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center justify-center gap-2 w-full px-4 py-3 min-h-[44px] rounded-lg border border-white/25 bg-white/5 hover:bg-white/15 text-white text-base font-medium"
+          >
+            <LogIn className="w-4 h-4" />
+            Sign In
+          </Link>
           <Link
             to="/request-audit"
             onClick={() => setMobileOpen(false)}

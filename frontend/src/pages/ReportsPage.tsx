@@ -65,6 +65,15 @@ const ReportsPage: React.FC = () => {
     loadAll();
   }, [loadAll]);
 
+  const handleExport = async (rep: ExecutiveReportRecord, format: 'pdf' | 'docx' | 'pptx') => {
+    setError(null);
+    try {
+      await convergenceApi.downloadReport(rep.id, format, rep.title);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : `Failed to export ${format.toUpperCase()}.`);
+    }
+  };
+
   const toggleKpi = (id: string) => {
     setSelectedKpiIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
@@ -352,27 +361,30 @@ const ReportsPage: React.FC = () => {
                 )}
 
                 <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100">
-                  <a
-                    href={convergenceApi.reportExportUrl(rep.id, 'pdf')}
+                  <button
+                    type="button"
+                    onClick={() => handleExport(rep, 'pdf')}
                     className="inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-900 text-base font-medium"
                   >
                     <Download className="w-4 h-4" />
                     Export PDF
-                  </a>
-                  <a
-                    href={convergenceApi.reportExportUrl(rep.id, 'docx')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleExport(rep, 'docx')}
                     className="inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-900 text-base font-medium"
                   >
                     <Download className="w-4 h-4" />
                     Export DOCX
-                  </a>
-                  <a
-                    href={convergenceApi.reportExportUrl(rep.id, 'pptx')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleExport(rep, 'pptx')}
                     className="inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-900 text-base font-medium"
                   >
                     <Download className="w-4 h-4" />
                     Export PPTX
-                  </a>
+                  </button>
                   <button
                     type="button"
                     onClick={() => openPublishDialog(rep)}

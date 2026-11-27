@@ -70,31 +70,15 @@ async function parseJsonOrThrow<T>(res: Response): Promise<T> {
   return data as T;
 }
 
-function authHeaders(): HeadersInit {
+export function authHeaders(): Record<string, string> {
   const token = getAuthToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 export const authApi = {
-  async status(): Promise<{ hasUsers: boolean; userCount: number }> {
+  async status(): Promise<{ hasUsers: boolean; userCount: number; publicSignupEnabled?: boolean }> {
     const res = await fetch(`${apiBase}/api/v1/auth/status`);
     return parseJsonOrThrow(res);
-  },
-
-  async register(payload: {
-    email: string;
-    password: string;
-    fullName: string;
-    organizationName?: string;
-  }): Promise<{ accessToken: string; user: UserProfile }> {
-    const res = await fetch(`${apiBase}/api/v1/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const data = await parseJsonOrThrow<{ accessToken: string; user: UserProfile }>(res);
-    setAuthToken(data.accessToken);
-    return data;
   },
 
   async login(email: string, password: string): Promise<{ accessToken: string; user: UserProfile }> {

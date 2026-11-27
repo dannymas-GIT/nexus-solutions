@@ -1,11 +1,13 @@
 """Authentication, Profile, and Self-Service Password routes."""
 from __future__ import annotations
 
+import hmac
+import os
 import re
 import uuid
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session
 
@@ -32,6 +34,28 @@ def _normalize_username(email: str, requested: str | None) -> str:
     raw = (requested or email.split("@", 1)[0]).strip().lower()
     cleaned = re.sub(r"[^a-z0-9._-]+", "-", raw).strip("-")
     return (cleaned or "user")[:120]
+
+
+def _verify_bootstrap_api_key(x_admin_api_key: str | None) -> None:
+    """Require X-Admin-Api-Key matching NEXUS_ADMIN_API_KEY or PORTAL_API_KEY."""
+    provided = (x_admin_api_key or "").strip()
+    if not provided:
+        raise HTTPException(
+            status_code=401,
+            detail="X-Admin-Api-Key header is required to bootstrap the initial platform administrator",
+        )
+    expected = (
+        os.environ.get("NEXUS_ADMIN_API_KEY")
+        or os.environ.get("PORTAL_API_KEY")
+        or ""
+    ).strip()
+    if not expected:
+        raise HTTPException(
+            status_code=503,
+            detail="Bootstrap admin API key is not configured on server",
+        )
+    if not hmac.compare_digest(provided, expected):
+        raise HTTPException(status_code=401, detail="Invalid admin API key")
 
 
 class RegisterRequest(BaseModel):
@@ -66,11 +90,23 @@ class ChangePasswordRequest(BaseModel):
 @router.get("/v1/auth/status")
 def auth_status(db: Session = Depends(get_db)):
     count = db.query(UserAccount).count()
-    return {"hasUsers": count > 0, "userCount": count}
+    return {"hasUsers": count > 0, "userCount": count, "publicSignupEnabled": False}
 
 
-@router.post("/v1/auth/register", status_code=201)
-def register_account(body: RegisterRequest, db: Session = Depends(get_db)):
+def _bootstrap_initial_admin(
+    body: RegisterRequest,
+    x_admin_api_key: str | None,
+    db: Session,
+) -> dict:
+    # Once any account exists, public registration/bootstrap is permanently closed.
+    if db.query(UserAccount).count() > 0:
+        raise HTTPException(
+            status_code=403,
+            detail="Public registration is disabled. Accounts must be created by an administrator via /api/admin/users.",
+        )
+
+    _verify_bootstrap_api_key(x_admin_api_key)
+
     email = body.email.strip().lower()
     if not EMAIL_RE.match(email):
         raise HTTPException(status_code=422, detail="Enter a valid email address")
@@ -86,17 +122,13 @@ def register_account(body: RegisterRequest, db: Session = Depends(get_db)):
         suffix += 1
         username = f"{base_username}-{suffix}"
 
-    # First account bootstraps as platform_admin; subsequent self-signups default to least-privilege viewer.
-    is_first = db.query(UserAccount).count() == 0
-    role = "platform_admin" if is_first else "viewer"
-
     user = UserAccount(
         id=str(uuid.uuid4()),
         email=email,
         username=username,
         full_name=body.full_name.strip(),
         organization_name=(body.organization_name or "Nexus Workspace").strip(),
-        role=role,
+        role="platform_admin",
         password_hash=hash_password(body.password),
         is_active=True,
         must_change_password=False,
@@ -107,6 +139,26 @@ def register_account(body: RegisterRequest, db: Session = Depends(get_db)):
     db.refresh(user)
     token = create_access_token(user)
     return {"accessToken": token, "tokenType": "bearer", "user": serialize_user(user)}
+
+
+@router.post("/v1/auth/bootstrap", status_code=201)
+def bootstrap_platform_admin(
+    body: RegisterRequest,
+    x_admin_api_key: str | None = Header(None, alias="X-Admin-Api-Key"),
+    db: Session = Depends(get_db),
+):
+    """Server-key-protected one-time bootstrap for the initial platform_admin."""
+    return _bootstrap_initial_admin(body, x_admin_api_key, db)
+
+
+@router.post("/v1/auth/register", status_code=201)
+def register_account(
+    body: RegisterRequest,
+    x_admin_api_key: str | None = Header(None, alias="X-Admin-Api-Key"),
+    db: Session = Depends(get_db),
+):
+    """Locked-down bootstrap alias: requires X-Admin-Api-Key when zero users exist; disabled once initialized."""
+    return _bootstrap_initial_admin(body, x_admin_api_key, db)
 
 
 @router.post("/v1/auth/login")

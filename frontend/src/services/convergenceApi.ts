@@ -1,3 +1,5 @@
+import { authHeaders } from '@/services/authApi';
+
 const apiBase = ((import.meta as unknown as { env?: { VITE_API_BASE?: string } }).env?.VITE_API_BASE || '')
   .trim()
   .replace(/\/+$/, '');
@@ -143,12 +145,16 @@ export function savePortalKey(key: string): void {
 
 export const convergenceApi = {
   async getOverview(): Promise<ConvergenceOverview> {
-    const res = await fetch(`${apiBase}/api/v1/convergence/overview`);
+    const res = await fetch(`${apiBase}/api/v1/convergence/overview`, {
+      headers: authHeaders(),
+    });
     return parseJsonOrThrow<ConvergenceOverview>(res);
   },
 
   async listSources(): Promise<DataSourceRecord[]> {
-    const res = await fetch(`${apiBase}/api/v1/convergence/sources`);
+    const res = await fetch(`${apiBase}/api/v1/convergence/sources`, {
+      headers: authHeaders(),
+    });
     const data = await parseJsonOrThrow<{ sources: DataSourceRecord[] }>(res);
     return data.sources || [];
   },
@@ -160,6 +166,7 @@ export const convergenceApi = {
     form.append('category', category);
     const res = await fetch(`${apiBase}/api/v1/convergence/sources/upload-csv`, {
       method: 'POST',
+      headers: authHeaders(),
       body: form,
     });
     const data = await parseJsonOrThrow<{ source: DataSourceRecord }>(res);
@@ -174,7 +181,7 @@ export const convergenceApi = {
   }): Promise<DataSourceRecord> {
     const res = await fetch(`${apiBase}/api/v1/convergence/sources`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify(payload),
     });
     const data = await parseJsonOrThrow<{ source: DataSourceRecord }>(res);
@@ -184,18 +191,23 @@ export const convergenceApi = {
   async deleteSource(sourceId: string): Promise<void> {
     const res = await fetch(`${apiBase}/api/v1/convergence/sources/${encodeURIComponent(sourceId)}`, {
       method: 'DELETE',
+      headers: authHeaders(),
     });
     await parseJsonOrThrow<{ ok: boolean }>(res);
   },
 
   async listKpiTemplates(): Promise<KpiTemplate[]> {
-    const res = await fetch(`${apiBase}/api/v1/convergence/kpi-templates`);
+    const res = await fetch(`${apiBase}/api/v1/convergence/kpi-templates`, {
+      headers: authHeaders(),
+    });
     const data = await parseJsonOrThrow<{ templates: KpiTemplate[] }>(res);
     return data.templates || [];
   },
 
   async listKpis(): Promise<KpiRecord[]> {
-    const res = await fetch(`${apiBase}/api/v1/convergence/kpis`);
+    const res = await fetch(`${apiBase}/api/v1/convergence/kpis`, {
+      headers: authHeaders(),
+    });
     const data = await parseJsonOrThrow<{ kpis: KpiRecord[] }>(res);
     return data.kpis || [];
   },
@@ -214,7 +226,7 @@ export const convergenceApi = {
   }): Promise<KpiRecord> {
     const res = await fetch(`${apiBase}/api/v1/convergence/kpis`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify(payload),
     });
     const data = await parseJsonOrThrow<{ kpi: KpiRecord }>(res);
@@ -234,7 +246,7 @@ export const convergenceApi = {
   ): Promise<KpiRecord> {
     const res = await fetch(`${apiBase}/api/v1/convergence/kpis/${encodeURIComponent(kpiId)}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify(payload),
     });
     const data = await parseJsonOrThrow<{ kpi: KpiRecord }>(res);
@@ -244,12 +256,15 @@ export const convergenceApi = {
   async deleteKpi(kpiId: string): Promise<void> {
     const res = await fetch(`${apiBase}/api/v1/convergence/kpis/${encodeURIComponent(kpiId)}`, {
       method: 'DELETE',
+      headers: authHeaders(),
     });
     await parseJsonOrThrow<{ ok: boolean }>(res);
   },
 
   async listReports(): Promise<ExecutiveReportRecord[]> {
-    const res = await fetch(`${apiBase}/api/v1/convergence/reports`);
+    const res = await fetch(`${apiBase}/api/v1/convergence/reports`, {
+      headers: authHeaders(),
+    });
     const data = await parseJsonOrThrow<{ reports: ExecutiveReportRecord[] }>(res);
     return data.reports || [];
   },
@@ -264,7 +279,7 @@ export const convergenceApi = {
   }): Promise<ExecutiveReportRecord> {
     const res = await fetch(`${apiBase}/api/v1/convergence/reports`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify(payload),
     });
     const data = await parseJsonOrThrow<{ report: ExecutiveReportRecord }>(res);
@@ -273,6 +288,34 @@ export const convergenceApi = {
 
   reportExportUrl(reportId: string, format: 'pdf' | 'docx' | 'pptx'): string {
     return `${apiBase}/api/v1/convergence/reports/${encodeURIComponent(reportId)}/export?format=${format}`;
+  },
+
+  async downloadReport(
+    reportId: string,
+    format: 'pdf' | 'docx' | 'pptx',
+    title?: string
+  ): Promise<void> {
+    const res = await fetch(this.reportExportUrl(reportId, format), {
+      headers: authHeaders(),
+    });
+    if (!res.ok) {
+      await parseJsonOrThrow(res);
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const slug =
+      (title || 'nexus-report')
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 48) || 'nexus-report';
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${slug}.${format}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   },
 
   async publishReportToPortal(
@@ -287,6 +330,7 @@ export const convergenceApi = {
         headers: {
           'Content-Type': 'application/json',
           'X-Portal-Api-Key': portalApiKey,
+          ...authHeaders(),
         },
         body: JSON.stringify(payload),
       }
@@ -297,6 +341,7 @@ export const convergenceApi = {
   async deleteReport(reportId: string): Promise<void> {
     const res = await fetch(`${apiBase}/api/v1/convergence/reports/${encodeURIComponent(reportId)}`, {
       method: 'DELETE',
+      headers: authHeaders(),
     });
     await parseJsonOrThrow<{ ok: boolean }>(res);
   },

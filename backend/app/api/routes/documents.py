@@ -7,10 +7,11 @@ import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Body, Header, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query
 from fastapi.responses import FileResponse, JSONResponse, Response
 
 from ...core.config import settings
+from ...core.dependencies import get_current_user
 from ...services.document import get_document_service
 from ...services.storage import get_storage_service
 from .storage import require_admin_api_key
@@ -23,7 +24,11 @@ MEDIA_TYPES = {
     "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 }
 
-router = APIRouter(prefix="/documents", tags=["documents"])
+router = APIRouter(
+    prefix="/documents",
+    tags=["documents"],
+    dependencies=[Depends(get_current_user)],
+)
 logger = logging.getLogger(__name__)
 
 
