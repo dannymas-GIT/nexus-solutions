@@ -29,6 +29,7 @@ class Phase2ConvergenceTests(unittest.TestCase):
             "PORTAL_BUNDLE_ROOT",
             "PORTAL_PUBLIC_BASE",
             "NEXUS_ADMIN_API_KEY",
+            "AUTH_JWT_SECRET",
         )
         self._env_backup = {k: os.environ.get(k) for k in self._env_keys}
         db_path = Path(self._tmpdir.name) / "phase2.db"
@@ -37,6 +38,7 @@ class Phase2ConvergenceTests(unittest.TestCase):
         os.environ["PORTAL_API_KEY"] = "phase2-portal-key"
         os.environ["NEXUS_ADMIN_API_KEY"] = "phase2-admin-key"
         os.environ["PORTAL_JWT_SECRET"] = "phase2-strong-jwt-secret-value-123456"
+        os.environ["AUTH_JWT_SECRET"] = "phase2-auth-jwt-secret-value-999999"
         os.environ["PORTAL_PUBLIC_BASE"] = "https://nexus-solutions.us"
         portal_db.reset_engine()
         self.client = TestClient(app)
@@ -50,7 +52,28 @@ class Phase2ConvergenceTests(unittest.TestCase):
                 os.environ[k] = v
         self._tmpdir.cleanup()
 
+    def _bootstrap_auth_headers(self) -> dict[str, str]:
+        res = self.client.post(
+            "/api/v1/auth/bootstrap",
+            headers={"X-Admin-Api-Key": "phase2-admin-key"},
+            json={
+                "email": "ops@nexus.example",
+                "password": "StrongPassword!123",
+                "fullName": "Phase Two Admin",
+            },
+        )
+        self.assertEqual(res.status_code, 201, res.text)
+        return {"Authorization": f"Bearer {res.json()['accessToken']}"}
+
     def test_full_csv_to_kpi_to_report_to_portal_loop(self) -> None:
+        # 0. Anonymous callers are rejected from workspace convergence routes
+        self.assertEqual(self.client.get("/api/v1/convergence/overview").status_code, 401)
+        self.assertEqual(self.client.get("/api/v1/convergence/sources").status_code, 401)
+        self.assertEqual(self.client.get("/api/v1/convergence/kpis").status_code, 401)
+        self.assertEqual(self.client.get("/api/v1/convergence/reports").status_code, 401)
+
+        auth_headers = self._bootstrap_auth_headers()
+
         # 1. Upload CSV dataset
         csv_bytes = (
             b"Account,MRR,GrossMarginPct,DSO\n"
@@ -60,6 +83,7 @@ class Phase2ConvergenceTests(unittest.TestCase):
         )
         up = self.client.post(
             "/api/v1/convergence/sources/upload-csv",
+            headers=auth_headers,
             data={"name": "Q4 Finance Export", "category": "Financial"},
             files={"file": ("q4_finance.csv", csv_bytes, "text/csv")},
         )
@@ -71,13 +95,14 @@ class Phase2ConvergenceTests(unittest.TestCase):
         self.assertEqual(mrr_col["stats"]["sum"], 130000.0)
 
         # 2. Fetch corporate KPI templates
-        tpl = self.client.get("/api/v1/convergence/kpi-templates")
+        tpl = self.client.get("/api/v1/convergence/kpi-templates", headers=auth_headers)
         self.assertEqual(tpl.status_code, 200)
         self.assertGreaterEqual(len(tpl.json()["templates"]), 5)
 
         # 3. Create CSV-bound MRR KPI (auto-computed sum = 130,000 vs target 125,000)
         kpi_mrr = self.client.post(
             "/api/v1/convergence/kpis",
+            headers=auth_headers,
             json={
                 "name": "Monthly Recurring Revenue",
                 "category": "Revenue",
@@ -98,6 +123,7 @@ class Phase2ConvergenceTests(unittest.TestCase):
         # 4. Create lower-is-better DSO KPI bound to CSV average (31.0 vs target 35 -> on_track)
         kpi_dso = self.client.post(
             "/api/v1/convergence/kpis",
+            headers=auth_headers,
             json={
                 "name": "Days Sales Outstanding",
                 "category": "Cash & Finance",
@@ -116,6 +142,7 @@ class Phase2ConvergenceTests(unittest.TestCase):
         # Update DSO target via PATCH
         patched = self.client.patch(
             f"/api/v1/convergence/kpis/{kpi_dso.json()['kpi']['id']}",
+            headers=auth_headers,
             json={"targetValue": 20},
         )
         self.assertEqual(patched.status_code, 200)
@@ -124,6 +151,7 @@ class Phase2ConvergenceTests(unittest.TestCase):
         # 5. Create Executive Report and export PDF, DOCX, PPTX
         rep = self.client.post(
             "/api/v1/convergence/reports",
+            headers=auth_headers,
             json={
                 "title": "Q4 Executive Convergence Pack",
                 "companyName": "Acme Operations Inc.",
@@ -135,21 +163,31 @@ class Phase2ConvergenceTests(unittest.TestCase):
         report_id = rep.json()["report"]["id"]
         self.assertEqual(rep.json()["report"]["kpiCount"], 2)
 
-        pdf = self.client.get(f"/api/v1/convergence/reports/{report_id}/export?format=pdf")
+        pdf = self.client.get(
+            f"/api/v1/convergence/reports/{report_id}/export?format=pdf",
+            headers=auth_headers,
+        )
         self.assertEqual(pdf.status_code, 200)
         self.assertTrue(pdf.content.startswith(b"%PDF"))
 
-        docx = self.client.get(f"/api/v1/convergence/reports/{report_id}/export?format=docx")
+        docx = self.client.get(
+            f"/api/v1/convergence/reports/{report_id}/export?format=docx",
+            headers=auth_headers,
+        )
         self.assertEqual(docx.status_code, 200)
         self.assertTrue(docx.content.startswith(b"PK"))
 
-        pptx = self.client.get(f"/api/v1/convergence/reports/{report_id}/export?format=pptx")
+        pptx = self.client.get(
+            f"/api/v1/convergence/reports/{report_id}/export?format=pptx",
+            headers=auth_headers,
+        )
         self.assertEqual(pptx.status_code, 200)
         self.assertTrue(pptx.content.startswith(b"PK"))
 
-        # 6. Publish report to Client Portal (requires operator portal API key)
+        # 6. Publish report to Client Portal (requires authenticated user + operator portal API key)
         unauth_pub = self.client.post(
             f"/api/v1/convergence/reports/{report_id}/publish-portal",
+            headers=auth_headers,
             json={"clientEmail": "cfo@acme.example", "sendEmail": False},
         )
         self.assertEqual(unauth_pub.status_code, 401)
@@ -157,7 +195,7 @@ class Phase2ConvergenceTests(unittest.TestCase):
         portal_headers = {"X-Portal-Api-Key": "phase2-portal-key"}
         pub = self.client.post(
             f"/api/v1/convergence/reports/{report_id}/publish-portal",
-            headers=portal_headers,
+            headers={**auth_headers, **portal_headers},
             json={"clientEmail": "cfo@acme.example", "expiresInDays": 14, "sendEmail": False},
         )
         self.assertEqual(pub.status_code, 201, pub.text)
@@ -166,7 +204,7 @@ class Phase2ConvergenceTests(unittest.TestCase):
         token = pub_data["token"]
         self.assertTrue(pub_data["portalUrl"].startswith("https://nexus-solutions.us/portal/"))
 
-        # Verify bundle download contains HTML, CSV, and PDF
+        # Verify bundle download contains HTML, CSV, and PDF (client-token endpoint remains public)
         zip_res = self.client.get(f"/api/portal/download/{did}?token={token}")
         self.assertEqual(zip_res.status_code, 200)
         with zipfile.ZipFile(io.BytesIO(zip_res.content)) as zf:
@@ -191,7 +229,7 @@ class Phase2ConvergenceTests(unittest.TestCase):
         self.assertEqual(deliverables[0]["latestMessage"], "Board-ready!")
 
         # 8. Overview reflects full state
-        ov = self.client.get("/api/v1/convergence/overview")
+        ov = self.client.get("/api/v1/convergence/overview", headers=auth_headers)
         self.assertEqual(ov.status_code, 200)
         ov_data = ov.json()
         self.assertEqual(ov_data["sourceCount"], 1)

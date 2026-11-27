@@ -142,10 +142,10 @@ const RequestAuditPage: React.FC = () => {
                     Explore Corporate Services
                   </Link>
                   <Link
-                    to="/idea-studio"
+                    to="/"
                     className="inline-flex items-center gap-2 px-5 py-3 min-h-[44px] rounded-lg border border-slate-300 text-slate-800 text-base font-medium hover:bg-slate-100"
                   >
-                    Open Idea Studio
+                    Return to Overview
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>

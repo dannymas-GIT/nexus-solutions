@@ -4,7 +4,7 @@
 # CORS allowed origins (comma-separated)
 BACKEND_CORS_ORIGINS=https://nexus-solutions.us,https://www.nexus-solutions.us,http://localhost:3000,http://localhost:5173
 
-# Operator API key for /api/v1/storage/* and /api/v1/leads admin listing (falls back to PORTAL_API_KEY)
+# Operator API key for /api/v1/auth/bootstrap, /api/v1/storage/*, and /api/v1/leads admin listing (falls back to PORTAL_API_KEY)
 NEXUS_ADMIN_API_KEY=
 
 # Client deliverable portal (Income Scout / Greenhouse)

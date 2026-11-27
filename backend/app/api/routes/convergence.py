@@ -23,6 +23,7 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 from sqlalchemy.orm import Session
 
+from ...core.dependencies import get_current_user
 from ...db.portal_db import (
     DataSourceSnapshot,
     ExecutiveReport,
@@ -32,7 +33,11 @@ from ...db.portal_db import (
 )
 from .portal import _bundle_root, _require_api_key, create_magic_link_for_deliverable
 
-router = APIRouter(prefix="/convergence", tags=["convergence"])
+router = APIRouter(
+    prefix="/convergence",
+    tags=["convergence"],
+    dependencies=[Depends(get_current_user)],
+)
 
 MAX_CSV_BYTES = 5 * 1024 * 1024
 ALLOWED_AGGREGATIONS = {"manual", "sum", "avg", "min", "max", "count"}

@@ -68,7 +68,7 @@ const SplashPage: React.FC = () => {
           >
             <button
               type="button"
-              onClick={() => navigate('/idea-studio')}
+              onClick={() => navigate('/services')}
               className="group flex flex-col items-center text-center p-7 rounded-2xl bg-white/10 border border-white/20 hover:bg-blue-500/20 hover:border-blue-300/60 transition-colors"
             >
               <Lightbulb className="h-11 w-11 text-blue-300 mb-4" />
@@ -77,14 +77,14 @@ const SplashPage: React.FC = () => {
                 Validate product briefs, run M1/M2 reports, and stage apps on *.nexus-solutions.us.
               </span>
               <span className="mt-auto inline-flex items-center text-blue-200 font-semibold text-base min-h-[44px]">
-                Open Idea Studio
+                Learn More
                 <ChevronRight className="w-5 h-5 ml-1" />
               </span>
             </button>
 
             <button
               type="button"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/request-audit')}
               className="group flex flex-col items-center text-center p-7 rounded-2xl bg-white/10 border border-white/20 hover:bg-amber-500/20 hover:border-amber-300/60 transition-colors"
             >
               <Rocket className="h-11 w-11 text-amber-300 mb-4" />
@@ -93,14 +93,14 @@ const SplashPage: React.FC = () => {
                 Build structured plans and export executive DOCX, PPTX, and PDF deliverables.
               </span>
               <span className="mt-auto inline-flex items-center text-amber-200 font-semibold text-base min-h-[44px]">
-                Open Workspace
+                Request Audit
                 <ChevronRight className="w-5 h-5 ml-1" />
               </span>
             </button>
 
             <button
               type="button"
-              onClick={() => navigate('/analysis-engine/set-kpis')}
+              onClick={() => navigate('/login')}
               className="group flex flex-col items-center text-center p-7 rounded-2xl bg-white/10 border border-white/20 hover:bg-indigo-500/20 hover:border-indigo-300/60 transition-colors"
             >
               <Database className="h-11 w-11 text-indigo-300 mb-4" />
@@ -109,7 +109,7 @@ const SplashPage: React.FC = () => {
                 Define operational KPIs, connect sources, and prepare recurring client reviews.
               </span>
               <span className="mt-auto inline-flex items-center text-indigo-200 font-semibold text-base min-h-[44px]">
-                Configure KPIs
+                Sign In to Workspace
                 <ChevronRight className="w-5 h-5 ml-1" />
               </span>
             </button>

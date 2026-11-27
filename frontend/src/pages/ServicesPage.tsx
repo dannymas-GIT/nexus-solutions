@@ -90,10 +90,10 @@ const ServicesPage: React.FC = () => {
             <ArrowRight className="w-5 h-5" />
           </Link>
           <Link
-            to="/idea-studio"
+            to="/login"
             className="inline-flex items-center gap-2 px-7 py-3.5 min-h-[48px] bg-white/10 hover:bg-white/20 border border-white/25 text-white rounded-xl text-base font-medium transition-colors"
           >
-            Launch Idea Studio
+            Sign In to Workspace
           </Link>
           <p className="text-blue-200 text-base">
             Solo founders & authors: productized agent packages live at{' '}

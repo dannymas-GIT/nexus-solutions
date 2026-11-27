@@ -48,6 +48,7 @@ class Phase1BackendTests(unittest.TestCase):
             "NEXUS_WORKSPACE_ROOT",
             "LEADS_NOTIFY_EMAIL",
             "SES_SOURCE_EMAIL",
+            "AUTH_JWT_SECRET",
         )
         self._env_backup = {k: os.environ.get(k) for k in self._env_keys}
         db_path = Path(self._tmpdir.name) / "test_portal.db"
@@ -56,11 +57,25 @@ class Phase1BackendTests(unittest.TestCase):
         os.environ["PORTAL_API_KEY"] = "test-portal-key-123"
         os.environ["NEXUS_ADMIN_API_KEY"] = "test-admin-key-456"
         os.environ["PORTAL_JWT_SECRET"] = "super-strong-test-jwt-secret-value-999"
+        os.environ["AUTH_JWT_SECRET"] = "phase1-auth-jwt-secret-value-999999"
         os.environ["NEXUS_WORKSPACE_ROOT"] = str(BACKEND_DIR.parent)
         os.environ.pop("LEADS_NOTIFY_EMAIL", None)
         os.environ.pop("SES_SOURCE_EMAIL", None)
         portal_db.reset_engine()
         self.client = TestClient(app)
+
+    def _bootstrap_auth_headers(self) -> dict[str, str]:
+        res = self.client.post(
+            "/api/v1/auth/bootstrap",
+            headers={"X-Admin-Api-Key": "test-admin-key-456"},
+            json={
+                "email": "admin@nexus.example",
+                "password": "StrongPassword!123",
+                "fullName": "Phase One Admin",
+            },
+        )
+        self.assertEqual(res.status_code, 201, res.text)
+        return {"Authorization": f"Bearer {res.json()['accessToken']}"}
 
     def tearDown(self) -> None:
         portal_db.reset_engine()
@@ -89,17 +104,31 @@ class Phase1BackendTests(unittest.TestCase):
         self.assertEqual(res_unconfigured.status_code, 503)
 
     def test_documents_tree_and_file_read(self) -> None:
-        res = self.client.get("/api/v1/documents/tree")
+        self.assertEqual(self.client.get("/api/v1/documents/tree").status_code, 401)
+        self.assertEqual(
+            self.client.get(
+                "/api/v1/documents/files/marketing/content/product_datasheet.md"
+            ).status_code,
+            401,
+        )
+
+        auth_headers = self._bootstrap_auth_headers()
+        res = self.client.get("/api/v1/documents/tree", headers=auth_headers)
         self.assertEqual(res.status_code, 200)
         tree = res.json()
         top_ids = [n["id"] for n in tree]
         self.assertIn("marketing", top_ids)
 
-        md = self.client.get("/api/v1/documents/files/marketing/content/product_datasheet.md")
+        md = self.client.get(
+            "/api/v1/documents/files/marketing/content/product_datasheet.md",
+            headers=auth_headers,
+        )
         self.assertEqual(md.status_code, 200)
         self.assertIn("Nexus", md.json()["content"])
 
-        escape = self.client.get("/api/v1/documents/files/../../etc/passwd")
+        escape = self.client.get(
+            "/api/v1/documents/files/../../etc/passwd", headers=auth_headers
+        )
         self.assertIn(escape.status_code, (400, 403, 404))
 
     def test_documents_generate_direct_download_and_storage_guard(self) -> None:
@@ -110,8 +139,16 @@ class Phase1BackendTests(unittest.TestCase):
             "target_market": "Mid-market ops",
             "year1_revenue": "$500,000",
         }
+        anon_res = self.client.post(
+            "/api/v1/documents/generate?template_name=business_summary&document_type=pdf",
+            json=payload,
+        )
+        self.assertEqual(anon_res.status_code, 401)
+
+        auth_headers = self._bootstrap_auth_headers()
         res_pdf = self.client.post(
             "/api/v1/documents/generate?template_name=business_summary&document_type=pdf",
+            headers=auth_headers,
             json=payload,
         )
         self.assertEqual(res_pdf.status_code, 200)
@@ -120,6 +157,7 @@ class Phase1BackendTests(unittest.TestCase):
 
         res_docx = self.client.post(
             "/api/v1/documents/generate?template_name=business_plan&document_type=docx",
+            headers=auth_headers,
             json=payload,
         )
         self.assertEqual(res_docx.status_code, 200)
@@ -127,6 +165,7 @@ class Phase1BackendTests(unittest.TestCase):
 
         res_storage_unauth = self.client.post(
             "/api/v1/documents/generate?template_name=business_summary&document_type=pdf&storage_path=out/a.pdf",
+            headers=auth_headers,
             json=payload,
         )
         self.assertEqual(res_storage_unauth.status_code, 401)

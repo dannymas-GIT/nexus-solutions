@@ -1,3 +1,4 @@
+import { authHeaders } from '@/services/authApi';
 import type {
   CreateIdeaInput,
   EvaluateGateInput,
@@ -86,6 +87,7 @@ async function requestJson<T>(
   const headers: Record<string, string> = {
     Accept: 'application/json',
     'X-Tenant-Id': IDEA_STUDIO_TENANT,
+    ...(isDirectMode ? {} : authHeaders()),
   };
 
   let bodyString: string | undefined;

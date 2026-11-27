@@ -8,6 +8,7 @@ import ImageGallery from './ImageGallery';
 import PDFViewer from './PDFViewer';
 import PPTXViewer from './PPTXViewer';
 import DOCXViewer from './DOCXViewer';
+import { authHeaders } from '@/services/authApi';
 
 // Define types for the document types and content
 type DocType = 'markdown' | 'html' | 'pdf' | 'image' | 'image-gallery' | 'pptx' | 'docx';
@@ -76,7 +77,7 @@ const DocViewer: React.FC<DocViewerProps> = ({ filePath, fileType }) => {
         // Only fetch content for markdown/html for now
         // Other types might just need the validated path
         if (fileType === 'markdown' || fileType === 'html') { 
-          const response = await fetch(apiUrl);
+          const response = await fetch(apiUrl, { headers: authHeaders() });
           
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({ detail: response.statusText }));

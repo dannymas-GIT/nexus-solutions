@@ -1,9 +1,12 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import { Layout } from './components/ui';
+import { AuthProvider } from './contexts/AuthContext';
+import RequireAuth from './components/auth/RequireAuth';
 import PublicAnalyticsTracker from './components/PublicAnalyticsTracker';
 import SaasErrorPage, { SaasErrorBoundary } from './components/SaasErrorPage';
 import DocViewerPage from './pages/DocViewerPage';
 import SplashPage from './pages/SplashPage';
+import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import BusinessPlanWizard from './pages/BusinessPlanWizard';
 import SettingsPage from './pages/SettingsPage';
@@ -21,6 +24,16 @@ import PortalManagerPage from './pages/PortalManagerPage';
 import AdminUsersPage from './pages/admin/users/AdminUsersPage';
 import ProfilePage from './pages/profile/ProfilePage';
 
+function ProtectedWorkspaceLayout() {
+  return (
+    <RequireAuth>
+      <Layout>
+        <Outlet />
+      </Layout>
+    </RequireAuth>
+  );
+}
+
 /**
  * Main application component with routing configuration.
  */
@@ -28,197 +41,61 @@ function App() {
   return (
     <SaasErrorBoundary>
       <Router>
-        <PublicAnalyticsTracker />
-        <Routes>
-          {/* Public marketing routes (MarketingNavbar, no app sidebar) */}
-          <Route path="/" element={<SplashPage />} />
-          <Route path="/services" element={<ServicesPage />} />
-          <Route path="/request-audit" element={<RequestAuditPage />} />
-          <Route path="/packages" element={<PackagesPage />} />
+        <AuthProvider>
+          <PublicAnalyticsTracker />
+          <Routes>
+            {/* Public marketing & authentication routes (no workspace sidebar/navbar) */}
+            <Route path="/" element={<SplashPage />} />
+            <Route path="/services" element={<ServicesPage />} />
+            <Route path="/request-audit" element={<RequestAuditPage />} />
+            <Route path="/packages" element={<PackagesPage />} />
+            <Route path="/login" element={<LoginPage />} />
 
-          {/* Client deliverable review (magic link — dedicated client portal chrome) */}
-          <Route path="/portal/:token" element={<PortalPage />} />
+            {/* Client deliverable review (magic link — dedicated client portal chrome) */}
+            <Route path="/portal/:token" element={<PortalPage />} />
 
-          {/* Main app routes with Workspace Layout */}
-          <Route
-            path="/dashboard"
-            element={
-              <Layout>
-                <Dashboard />
-              </Layout>
-            }
-          />
+            {/* Authenticated Nexus workspace routes (gated behind RequireAuth) */}
+            <Route element={<ProtectedWorkspaceLayout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/integrations" element={<IntegrationsPage />} />
+              <Route path="/analysis-engine/set-kpis" element={<SetKpisPage />} />
+              <Route path="/kpis" element={<SetKpisPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/portal-manager" element={<PortalManagerPage />} />
 
-          {/* Data Sources & CSV Ingestion */}
-          <Route
-            path="/integrations"
-            element={
-              <Layout>
-                <IntegrationsPage />
-              </Layout>
-            }
-          />
+              {/* Documents */}
+              <Route path="/docs" element={<DocViewerPage />} />
+              <Route path="/docs/:category" element={<DocViewerPage />} />
+              <Route path="/docs/:category/:id" element={<DocViewerPage />} />
+              <Route path="/documents" element={<DocViewerPage />} />
 
-          {/* Corporate KPI Engine */}
-          <Route
-            path="/analysis-engine/set-kpis"
-            element={
-              <Layout>
-                <SetKpisPage />
-              </Layout>
-            }
-          />
+              {/* Strategic Plan routes */}
+              <Route path="/create-business-plan" element={<BusinessPlanWizard />} />
+              <Route path="/my-plans" element={<ReportsPage />} />
+              <Route path="/plan-templates" element={<BusinessPlanWizard />} />
 
-          {/* Executive Report Studio */}
-          <Route
-            path="/reports"
-            element={
-              <Layout>
-                <ReportsPage />
-              </Layout>
-            }
-          />
+              {/* Idea Studio routes */}
+              <Route path="/idea-studio" element={<IdeaStudioPage />} />
+              <Route path="/idea-studio/:tab" element={<IdeaStudioPage />} />
 
-          {/* Internal Client Portal Console */}
-          <Route
-            path="/portal-manager"
-            element={
-              <Layout>
-                <PortalManagerPage />
-              </Layout>
-            }
-          />
+              {/* Administration: Users & Access (canonical /admin/users + /team alias) */}
+              <Route path="/admin/users" element={<AdminUsersPage />} />
+              <Route path="/team" element={<AdminUsersPage />} />
 
-          {/* Document routes */}
-          <Route
-            path="/docs"
-            element={
-              <Layout>
-                <DocViewerPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/docs/:category"
-            element={
-              <Layout>
-                <DocViewerPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/docs/:category/:id"
-            element={
-              <Layout>
-                <DocViewerPage />
-              </Layout>
-            }
-          />
+              {/* Onboarding Guides & Guided Tour */}
+              <Route path="/tutorials" element={<TutorialsPage />} />
+              <Route path="/tour" element={<TourPage />} />
 
-          {/* Strategic Plan routes */}
-          <Route
-            path="/create-business-plan"
-            element={
-              <Layout>
-                <BusinessPlanWizard />
-              </Layout>
-            }
-          />
-          <Route
-            path="/my-plans"
-            element={
-              <Layout>
-                <ReportsPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/plan-templates"
-            element={
-              <Layout>
-                <BusinessPlanWizard />
-              </Layout>
-            }
-          />
+              {/* Workspace Settings & Personal Profile */}
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+            </Route>
 
-          {/* Idea Studio routes */}
-          <Route
-            path="/idea-studio"
-            element={
-              <Layout>
-                <IdeaStudioPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/idea-studio/:tab"
-            element={
-              <Layout>
-                <IdeaStudioPage />
-              </Layout>
-            }
-          />
-
-          {/* Administration: Users & Access (canonical /admin/users + /team alias) */}
-          <Route
-            path="/admin/users"
-            element={
-              <Layout>
-                <AdminUsersPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/team"
-            element={
-              <Layout>
-                <AdminUsersPage />
-              </Layout>
-            }
-          />
-
-          {/* Onboarding Guides & Guided Tour */}
-          <Route
-            path="/tutorials"
-            element={
-              <Layout>
-                <TutorialsPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/tour"
-            element={
-              <Layout>
-                <TourPage />
-              </Layout>
-            }
-          />
-
-          {/* Workspace Settings */}
-          <Route
-            path="/settings"
-            element={
-              <Layout>
-                <SettingsPage />
-              </Layout>
-            }
-          />
-
-          {/* Personal Profile & Self-Service Password (/profile#password) */}
-          <Route
-            path="/profile"
-            element={
-              <Layout>
-                <ProfilePage />
-              </Layout>
-            }
-          />
-
-          {/* Branded 403 / 404 error pages */}
-          <Route path="/403" element={<SaasErrorPage status={403} />} />
-          <Route path="*" element={<SaasErrorPage status={404} />} />
-        </Routes>
+            {/* Branded 403 / 404 error pages */}
+            <Route path="/403" element={<SaasErrorPage status={403} />} />
+            <Route path="*" element={<SaasErrorPage status={404} />} />
+          </Routes>
+        </AuthProvider>
       </Router>
     </SaasErrorBoundary>
   );

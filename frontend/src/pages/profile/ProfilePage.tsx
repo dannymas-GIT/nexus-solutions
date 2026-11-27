@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   User,
   KeyRound,
@@ -8,29 +8,22 @@ import {
   CheckCircle2,
   AlertCircle,
   Save,
-  LogIn,
 } from 'lucide-react';
-import { authApi, getAuthToken, type UserProfile } from '@/services/authApi';
+import { authApi, type UserProfile } from '@/services/authApi';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ProfilePage: React.FC = () => {
   const location = useLocation();
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [hasUsers, setHasUsers] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { user: authUser, logout, refreshUser } = useAuth();
+  const [user, setUser] = useState<UserProfile | null>(authUser);
+  const [loading, setLoading] = useState(!authUser);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
-  // Auth form when signed out
-  const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [authEmail, setAuthEmail] = useState('');
-  const [authPassword, setAuthPassword] = useState('');
-  const [authFullName, setAuthFullName] = useState('');
-  const [authOrg, setAuthOrg] = useState('Nexus Workspace');
-  const [submittingAuth, setSubmittingAuth] = useState(false);
-
   // Profile edit form
-  const [fullName, setFullName] = useState('');
-  const [organizationName, setOrganizationName] = useState('');
+  const [fullName, setFullName] = useState(authUser?.fullName || '');
+  const [organizationName, setOrganizationName] = useState(authUser?.organizationName || '');
   const [savingProfile, setSavingProfile] = useState(false);
 
   // Self-service password form (#password)
@@ -42,23 +35,13 @@ const ProfilePage: React.FC = () => {
   const loadProfile = useCallback(async () => {
     setLoading(true);
     try {
-      const status = await authApi.status();
-      setHasUsers(status.hasUsers);
-      if (!status.hasUsers) setMode('register');
-
-      if (!getAuthToken()) {
-        setUser(null);
-        setLoading(false);
-        return;
-      }
       const me = await authApi.me();
       setUser(me);
       setFullName(me.fullName);
       setOrganizationName(me.organizationName);
       setError(null);
-    } catch {
-      authApi.logout();
-      setUser(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to load your profile.');
     } finally {
       setLoading(false);
     }
@@ -75,33 +58,6 @@ const ProfilePage: React.FC = () => {
     }
   }, [loading, location.hash, user]);
 
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmittingAuth(true);
-    setError(null);
-    setNotice(null);
-    try {
-      if (mode === 'register') {
-        await authApi.register({
-          email: authEmail.trim(),
-          password: authPassword,
-          fullName: authFullName.trim(),
-          organizationName: authOrg.trim() || 'Nexus Workspace',
-        });
-        setNotice('Account created and signed in.');
-      } else {
-        await authApi.login(authEmail.trim(), authPassword);
-        setNotice('Signed in successfully.');
-      }
-      setAuthPassword('');
-      await loadProfile();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Authentication failed.');
-    } finally {
-      setSubmittingAuth(false);
-    }
-  };
-
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingProfile(true);
@@ -113,6 +69,7 @@ const ProfilePage: React.FC = () => {
         organizationName: organizationName.trim(),
       });
       setUser(updated);
+      await refreshUser();
       setNotice('Profile details saved.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update profile.');
@@ -137,6 +94,7 @@ const ProfilePage: React.FC = () => {
       setConfirmPassword('');
       setNotice(res.message || 'Password updated successfully.');
       await loadProfile();
+      await refreshUser();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Password change failed.');
     } finally {
@@ -145,9 +103,8 @@ const ProfilePage: React.FC = () => {
   };
 
   const handleSignOut = () => {
-    authApi.logout();
-    setUser(null);
-    setNotice('You have signed out.');
+    logout();
+    navigate('/login', { replace: true });
   };
 
   return (
@@ -196,107 +153,10 @@ const ProfilePage: React.FC = () => {
         </div>
       )}
 
-      {loading ? (
+      {loading || !user ? (
         <div className="p-8 bg-white rounded-2xl border border-slate-200 text-lg text-slate-600">
           Loading account profile...
         </div>
-      ) : !user ? (
-        <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 max-w-xl mx-auto space-y-5">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <LogIn className="w-6 h-6 text-blue-700" />
-              <h2 className="text-2xl font-bold text-slate-900">
-                {mode === 'login' ? 'Sign In to Nexus' : 'Create Your Account'}
-              </h2>
-            </div>
-            {hasUsers && (
-              <button
-                type="button"
-                onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-                className="text-base font-semibold text-blue-700 hover:underline min-h-[44px] px-2"
-              >
-                {mode === 'login' ? 'Need an account?' : 'Have an account? Sign in'}
-              </button>
-            )}
-          </div>
-
-          <form onSubmit={handleAuth} className="space-y-4">
-            {mode === 'register' && (
-              <>
-                <div>
-                  <label htmlFor="prof-reg-name" className="block text-base font-medium text-slate-800 mb-1">
-                    Full Name *
-                  </label>
-                  <input
-                    id="prof-reg-name"
-                    type="text"
-                    required
-                    minLength={2}
-                    value={authFullName}
-                    onChange={(e) => setAuthFullName(e.target.value)}
-                    className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-slate-300 text-base"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="prof-reg-org" className="block text-base font-medium text-slate-800 mb-1">
-                    Organization
-                  </label>
-                  <input
-                    id="prof-reg-org"
-                    type="text"
-                    value={authOrg}
-                    onChange={(e) => setAuthOrg(e.target.value)}
-                    className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-slate-300 text-base"
-                  />
-                </div>
-              </>
-            )}
-
-            <div>
-              <label htmlFor="prof-email" className="block text-base font-medium text-slate-800 mb-1">
-                Email or Username *
-              </label>
-              <input
-                id="prof-email"
-                type={mode === 'register' ? 'email' : 'text'}
-                required
-                value={authEmail}
-                onChange={(e) => setAuthEmail(e.target.value)}
-                className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-slate-300 text-base"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="prof-pass" className="block text-base font-medium text-slate-800 mb-1">
-                Password *
-              </label>
-              <input
-                id="prof-pass"
-                type="password"
-                required
-                minLength={mode === 'register' ? 10 : 1}
-                value={authPassword}
-                onChange={(e) => setAuthPassword(e.target.value)}
-                placeholder={mode === 'register' ? 'Minimum 10 characters' : 'Enter your password'}
-                className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-slate-300 text-base"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={submittingAuth}
-              className="w-full min-h-[48px] px-6 py-3 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-base font-semibold disabled:opacity-50"
-            >
-              {submittingAuth
-                ? 'Please wait...'
-                : mode === 'login'
-                  ? 'Sign In'
-                  : hasUsers
-                    ? 'Create Account'
-                    : 'Create Initial Platform Admin'}
-            </button>
-          </form>
-        </section>
       ) : (
         <>
           {user.mustChangePassword && (

@@ -13,15 +13,14 @@ import {
   CheckCircle2,
   AlertCircle,
   History,
-  LogIn,
 } from 'lucide-react';
 import {
   authApi,
-  getAuthToken,
   type AuditLogEntry,
   type RoleDefinition,
   type UserProfile,
 } from '@/services/authApi';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ROLE_STYLES: Record<string, { label: string; className: string }> = {
   platform_admin: {
@@ -51,8 +50,8 @@ function initials(name: string): string {
 }
 
 const AdminUsersPage: React.FC = () => {
-  const [me, setMe] = useState<UserProfile | null>(null);
-  const [hasUsers, setHasUsers] = useState(true);
+  const { user: authUser } = useAuth();
+  const [me, setMe] = useState<UserProfile | null>(authUser);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [total, setTotal] = useState(0);
   const [roleCatalog, setRoleCatalog] = useState<RoleDefinition[]>([]);
@@ -86,26 +85,10 @@ const AdminUsersPage: React.FC = () => {
   // Reset password form
   const [resetTempPass, setResetTempPass] = useState('');
 
-  // Inline sign-in / bootstrap form when unauthenticated
-  const [authEmail, setAuthEmail] = useState('');
-  const [authPassword, setAuthPassword] = useState('');
-  const [authName, setAuthName] = useState('');
-  const [authSubmitting, setAuthSubmitting] = useState(false);
-
   const loadData = useCallback(async (query = '') => {
     setLoading(true);
     setError(null);
     try {
-      const status = await authApi.status();
-      setHasUsers(status.hasUsers);
-
-      if (!getAuthToken()) {
-        setMe(null);
-        setUsers([]);
-        setLoading(false);
-        return;
-      }
-
       const currentUser = await authApi.me();
       setMe(currentUser);
 
@@ -120,7 +103,6 @@ const AdminUsersPage: React.FC = () => {
         setAuditLogs(logs);
       }
     } catch (err) {
-      setMe(null);
       setError(err instanceof Error ? err.message : 'Unable to load user directory.');
     } finally {
       setLoading(false);
@@ -130,32 +112,6 @@ const AdminUsersPage: React.FC = () => {
   useEffect(() => {
     loadData(search);
   }, [loadData, search]);
-
-  const handleAuthSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthSubmitting(true);
-    setError(null);
-    try {
-      if (!hasUsers) {
-        await authApi.register({
-          email: authEmail.trim(),
-          password: authPassword,
-          fullName: authName.trim() || 'Platform Administrator',
-          organizationName: 'Nexus Solutions',
-        });
-        setNotice('Initialized first Platform Admin account.');
-      } else {
-        await authApi.login(authEmail.trim(), authPassword);
-        setNotice('Signed in successfully.');
-      }
-      setAuthPassword('');
-      await loadData(search);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Authentication failed.');
-    } finally {
-      setAuthSubmitting(false);
-    }
-  };
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -302,90 +258,14 @@ const AdminUsersPage: React.FC = () => {
         <div className="p-8 bg-white rounded-2xl border border-slate-200 text-lg text-slate-600">
           Loading Users &amp; Access...
         </div>
-      ) : !me ? (
-        <section className="max-w-lg mx-auto bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-5">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-blue-100 text-blue-800">
-              <LogIn className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900">
-                {hasUsers ? 'Admin Sign In Required' : 'Create First Platform Admin'}
-              </h2>
-              <p className="text-base text-slate-600">
-                {hasUsers
-                  ? 'Sign in with an administrator account to manage workspace users.'
-                  : 'No users exist yet. Register the initial Platform Admin account below.'}
-              </p>
-            </div>
-          </div>
-
-          <form onSubmit={handleAuthSubmit} className="space-y-4">
-            {!hasUsers && (
-              <div>
-                <label htmlFor="boot-name" className="block text-base font-medium text-slate-800 mb-1">
-                  Full Name *
-                </label>
-                <input
-                  id="boot-name"
-                  type="text"
-                  required
-                  value={authName}
-                  onChange={(e) => setAuthName(e.target.value)}
-                  placeholder="Alex Rivera"
-                  className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-slate-300 text-base text-slate-900"
-                />
-              </div>
-            )}
-            <div>
-              <label htmlFor="boot-email" className="block text-base font-medium text-slate-800 mb-1">
-                Work Email *
-              </label>
-              <input
-                id="boot-email"
-                type="email"
-                required
-                value={authEmail}
-                onChange={(e) => setAuthEmail(e.target.value)}
-                placeholder="admin@company.com"
-                className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-slate-300 text-base text-slate-900"
-              />
-            </div>
-            <div>
-              <label htmlFor="boot-pass" className="block text-base font-medium text-slate-800 mb-1">
-                Password *
-              </label>
-              <input
-                id="boot-pass"
-                type="password"
-                required
-                minLength={hasUsers ? 1 : 10}
-                value={authPassword}
-                onChange={(e) => setAuthPassword(e.target.value)}
-                placeholder={hasUsers ? 'Enter password' : 'Minimum 10 characters'}
-                className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-slate-300 text-base text-slate-900"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={authSubmitting}
-              className="w-full min-h-[48px] px-5 py-3 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-base font-semibold disabled:opacity-50"
-            >
-              {authSubmitting
-                ? 'Authenticating...'
-                : hasUsers
-                  ? 'Sign In'
-                  : 'Initialize Platform Admin'}
-            </button>
-          </form>
-        </section>
       ) : !isAdmin ? (
         <section className="bg-white rounded-2xl border border-slate-200 p-8 text-center space-y-4">
           <Lock className="w-10 h-10 text-amber-700 mx-auto" />
           <h2 className="text-2xl font-bold text-slate-900">Administrator Role Required</h2>
           <p className="text-lg text-slate-600 max-w-xl mx-auto">
-            You are signed in as <strong>{me.fullName}</strong> ({me.role}). Only Platform Admins
-            and Workspace Admins can manage users.
+            You are signed in as <strong>{me?.fullName || authUser?.fullName}</strong> (
+            {me?.role || authUser?.role}). Only Platform Admins and Workspace Admins can manage
+            users.
           </p>
           <Link
             to="/profile"

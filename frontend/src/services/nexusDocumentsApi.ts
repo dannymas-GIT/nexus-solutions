@@ -1,3 +1,4 @@
+import { authHeaders } from '@/services/authApi';
 import type { IdeaRecord, MilestoneReport } from '@/types/ideaStudio';
 
 export type NexusDocumentFormat = 'pdf' | 'docx' | 'pptx';
@@ -269,6 +270,7 @@ export async function generateAndDownloadNexusDocument(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders(),
       },
       body: JSON.stringify(payload),
     }

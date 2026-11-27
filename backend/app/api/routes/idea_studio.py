@@ -8,15 +8,20 @@ from typing import Annotated, Any
 from urllib.parse import urlencode, urlparse
 
 import requests
-from fastapi import APIRouter, Body, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 
 from ...core.config import settings
+from ...core.dependencies import get_current_user
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/idea-studio", tags=["idea-studio"])
+router = APIRouter(
+    prefix="/idea-studio",
+    tags=["idea-studio"],
+    dependencies=[Depends(get_current_user)],
+)
 
 _SAFE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 _SAFE_TENANT_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FiFile, FiFolder, FiChevronRight, FiChevronDown, FiImage, FiFileText, FiPieChart, FiBookOpen, FiSliders, FiLoader, FiAlertCircle } from 'react-icons/fi';
+import { authHeaders } from '@/services/authApi';
 
 // Define the file tree structure (matching backend response)
 interface FileNode {
@@ -33,7 +34,9 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ onFileSelect }) => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch('/api/v1/documents/tree');
+        const response = await fetch('/api/v1/documents/tree', {
+          headers: authHeaders(),
+        });
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ detail: response.statusText }));
           throw new Error(`HTTP error ${response.status}: ${errorData?.detail || 'Failed to fetch tree'}`);
