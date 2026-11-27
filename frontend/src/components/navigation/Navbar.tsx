@@ -59,17 +59,17 @@ const Navbar: React.FC = () => {
         { 
           label: 'Create New Plan', 
           path: '/create-business-plan',
-          description: 'Start with our step-by-step wizard' 
+          description: '5-step intake wizard wired into Idea Studio' 
         },
         { 
-          label: 'My Plans', 
+          label: 'My Plans & Briefs', 
           path: '/my-plans',
-          description: 'View and edit your saved plans'
+          description: 'View submitted plans, M1/M2 reports, and gates'
         },
         { 
-          label: 'Templates', 
-          path: '/plan-templates',
-          description: 'Pre-made business plan templates'
+          label: 'App Workspace & Staging', 
+          path: '/idea-studio/workspace',
+          description: 'Graduated apps, sprints, and *.nexus-solutions.us previews'
         }
       ]
     },

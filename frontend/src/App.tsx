@@ -53,7 +53,7 @@ function App() {
           </Layout>
         } />
         
-        {/* Business Plan routes */}
+        {/* Business Plan routes — unified with Idea Studio */}
         <Route path="/create-business-plan" element={
           <Layout>
             <BusinessPlanWizard />
@@ -61,7 +61,7 @@ function App() {
         } />
         <Route path="/my-plans" element={
           <Layout>
-            <BusinessPlanWizard />
+            <IdeaStudioPage defaultTab="inbox" />
           </Layout>
         } />
         <Route path="/plan-templates" element={

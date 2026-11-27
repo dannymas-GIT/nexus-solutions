@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {
@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Compass,
   DollarSign,
+  Download,
   ExternalLink,
   FileText,
   Globe,
@@ -30,6 +31,11 @@ import {
   IDEA_STUDIO_TENANT,
   ideaStudioApi,
 } from '@/services/ideaStudioApi';
+import {
+  buildDocumentPayloadFromIdea,
+  generateAndDownloadNexusDocument,
+  type NexusDocumentFormat,
+} from '@/services/nexusDocumentsApi';
 import type {
   FinOpsRollup,
   GateStatusResponse,
@@ -118,20 +124,30 @@ function formatUsd(amount?: number): string {
   return `$${val.toFixed(2)}`;
 }
 
-function normalizeTab(value?: string | null): IdeaStudioTab {
+function normalizeTab(
+  value?: string | null,
+  fallback: IdeaStudioTab = 'submit'
+): IdeaStudioTab {
   const cleaned = (value || '').trim().toLowerCase();
   if (cleaned === 'inbox' || cleaned === 'workspace' || cleaned === 'submit') {
     return cleaned;
   }
-  return 'submit';
+  return fallback;
 }
 
-const IdeaStudioPage: React.FC = () => {
+interface IdeaStudioPageProps {
+  defaultTab?: IdeaStudioTab;
+}
+
+const IdeaStudioPage: React.FC<IdeaStudioPageProps> = ({
+  defaultTab = 'submit',
+}) => {
   const { tab: routeTab } = useParams<{ tab?: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const initialTab = normalizeTab(routeTab || searchParams.get('tab'));
+  const initialTab = normalizeTab(routeTab || searchParams.get('tab'), defaultTab);
+  const queryIdeaId = searchParams.get('idea');
   const [activeTab, setActiveTab] = useState<IdeaStudioTab>(initialTab);
 
   const [config, setConfig] = useState<IdeaStudioConfig>({
@@ -172,9 +188,9 @@ const IdeaStudioPage: React.FC = () => {
   const guideToggleRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
-    const next = normalizeTab(routeTab || searchParams.get('tab'));
+    const next = normalizeTab(routeTab || searchParams.get('tab'), defaultTab);
     setActiveTab(next);
-  }, [routeTab, searchParams]);
+  }, [defaultTab, routeTab, searchParams]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -271,8 +287,8 @@ const IdeaStudioPage: React.FC = () => {
   );
 
   useEffect(() => {
-    loadWorkspaceData();
-    // Load once on mount
+    loadWorkspaceData(queryIdeaId || undefined);
+    // Load once on mount (honoring ?idea=<id> when coming from BusinessPlanWizard or Dashboard)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -592,6 +608,39 @@ const IdeaStudioPage: React.FC = () => {
       window.print();
       window.setTimeout(cleanup, 1000);
     }, 50);
+  };
+
+  const handleExportNexusDocument = async (
+    idea: IdeaRecord,
+    reports: MilestoneReport[],
+    format: NexusDocumentFormat
+  ) => {
+    const actionKey = `export-${idea.id}-${format}`;
+    setBusyAction(actionKey);
+    setErrorMessage('');
+    setStatusMessage(
+      `Generating Nexus ${format.toUpperCase()} deliverable for "${idea.title}"...`
+    );
+    try {
+      const payload = buildDocumentPayloadFromIdea(idea, reports);
+      await generateAndDownloadNexusDocument(
+        format,
+        payload,
+        idea.appSlug || idea.title
+      );
+      setStatusMessage(
+        `Downloaded ${format.toUpperCase()} deliverable for "${idea.title}".`
+      );
+    } catch (err) {
+      setStatusMessage('');
+      setErrorMessage(
+        err instanceof Error
+          ? err.message
+          : `Failed to export ${format.toUpperCase()} document.`
+      );
+    } finally {
+      setBusyAction(null);
+    }
   };
 
   const renderReportCard = (report: MilestoneReport, index: number) => {
@@ -1121,27 +1170,36 @@ const IdeaStudioPage: React.FC = () => {
                 />
               </div>
 
-              <div className="flex flex-wrap gap-3 pt-2">
-                <Button
-                  type="submit"
-                  leftIcon={Lightbulb}
-                  isLoading={busyAction === 'submit'}
-                  disabled={!config.configured || Boolean(busyAction)}
-                  className="min-h-[44px] px-6 text-base"
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    type="submit"
+                    leftIcon={Lightbulb}
+                    isLoading={busyAction === 'submit'}
+                    disabled={!config.configured || Boolean(busyAction)}
+                    className="min-h-[44px] px-6 text-base"
+                  >
+                    Submit Brief
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    leftIcon={Sparkles}
+                    isLoading={busyAction === 'submit-research'}
+                    disabled={!config.configured || Boolean(busyAction)}
+                    onClick={() => handleCreateIdea(true)}
+                    className="min-h-[44px] px-6 text-base"
+                  >
+                    Submit &amp; Run M1 Research
+                  </Button>
+                </div>
+                <Link
+                  to="/create-business-plan"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-primary hover:underline min-h-[44px]"
                 >
-                  Submit Brief
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  leftIcon={Sparkles}
-                  isLoading={busyAction === 'submit-research'}
-                  disabled={!config.configured || Boolean(busyAction)}
-                  onClick={() => handleCreateIdea(true)}
-                  className="min-h-[44px] px-6 text-base"
-                >
-                  Submit &amp; Run M1 Research
-                </Button>
+                  <FileText className="w-4 h-4" />
+                  <span>Use Full 5-Step Business Plan Wizard</span>
+                </Link>
               </div>
             </form>
           </Card>
@@ -1249,6 +1307,37 @@ const IdeaStudioPage: React.FC = () => {
                                 {selectedIdea.tags.join(', ')}
                               </span>
                             )}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-gray-100">
+                          <span className="text-sm font-medium text-gray-600 mr-1">
+                            Export Nexus Deliverable:
+                          </span>
+                          {(['pdf', 'docx', 'pptx'] as NexusDocumentFormat[]).map(
+                            (fmt) => (
+                              <Button
+                                key={fmt}
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                leftIcon={Download}
+                                isLoading={
+                                  busyAction ===
+                                  `export-${selectedIdea.id}-${fmt}`
+                                }
+                                disabled={Boolean(busyAction)}
+                                onClick={() =>
+                                  handleExportNexusDocument(
+                                    selectedIdea,
+                                    gateStatus?.reports || [],
+                                    fmt
+                                  )
+                                }
+                                className="min-h-[44px] border-gray-300 text-gray-800"
+                              >
+                                {fmt.toUpperCase()}
+                              </Button>
+                            )
+                          )}
                         </div>
                       </div>
                     </Card>
@@ -1523,6 +1612,19 @@ const IdeaStudioPage: React.FC = () => {
                               : 'Provision Staging'}
                           </Button>
                         )}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          leftIcon={Download}
+                          isLoading={busyAction === `export-${idea.id}-pdf`}
+                          disabled={Boolean(busyAction)}
+                          onClick={() =>
+                            handleExportNexusDocument(idea, [], 'pdf')
+                          }
+                          className="min-h-[44px] border-gray-300 text-gray-800"
+                        >
+                          Export PDF
+                        </Button>
                       </div>
                     </Card>
                   );
