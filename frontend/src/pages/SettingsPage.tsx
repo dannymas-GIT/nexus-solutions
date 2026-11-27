@@ -1,299 +1,176 @@
 import React, { useState } from 'react';
-import { Card } from '../components/ui/Card';
+import { Link } from 'react-router-dom';
+import { Settings, Shield, User, Send, Compass, CheckCircle2, Save } from 'lucide-react';
+import { TOUR_DISMISSED_KEY } from '../components/SaasTourOverlay';
+
+const PREFS_KEY = 'nexus_workspace_prefs';
+
+interface WorkspacePrefs {
+  defaultCurrency: string;
+  defaultReportPeriod: string;
+  compactTables: boolean;
+}
+
+function loadPrefs(): WorkspacePrefs {
+  try {
+    const raw = window.localStorage.getItem(PREFS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        defaultCurrency: parsed.defaultCurrency || 'USD',
+        defaultReportPeriod: parsed.defaultReportPeriod || 'Quarterly',
+        compactTables: Boolean(parsed.compactTables),
+      };
+    }
+  } catch {
+    // ignore storage errors
+  }
+  return {
+    defaultCurrency: 'USD',
+    defaultReportPeriod: 'Quarterly',
+    compactTables: false,
+  };
+}
 
 const SettingsPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('account');
+  const [prefs, setPrefs] = useState<WorkspacePrefs>(() => loadPrefs());
+  const [savedNotice, setSavedNotice] = useState<string | null>(null);
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      window.localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+      setSavedNotice('Workspace preferences saved.');
+    } catch {
+      setSavedNotice('Preferences updated for this session.');
+    }
+  };
+
+  const handleResetTour = () => {
+    try {
+      window.localStorage.removeItem(TOUR_DISMISSED_KEY);
+    } catch {
+      // ignore
+    }
+    setSavedNotice('Guided tour prompt re-enabled for your next visit.');
+  };
 
   return (
-    <div className="h-full">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-brand-neutral-dark">Settings</h1>
-        <p className="text-brand-neutral-medium">Manage your account settings and preferences</p>
+    <div className="max-w-5xl mx-auto space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-slate-900">Workspace Settings</h1>
+        <p className="text-lg text-slate-600 mt-1">
+          Configure reporting defaults and jump to administration or personal account controls.
+        </p>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-      {/* Sidebar */}
-        <div className="md:col-span-1">
-          <Card className="overflow-hidden">
-            <nav>
-              <ul className="divide-y divide-gray-100">
-                <li>
-                  <button
-                    className={`w-full text-left px-4 py-3 ${
-                      activeTab === 'account' 
-                      ? 'bg-brand-primary/10 text-brand-primary font-medium border-l-4 border-brand-primary' 
-                      : 'hover:bg-gray-50'
-                    }`}
-                    onClick={() => setActiveTab('account')}
-                  >
-                    Account Settings
-                  </button>
-                </li>
-                <li>
-                  <button
-                    className={`w-full text-left px-4 py-3 ${
-                      activeTab === 'profile' 
-                      ? 'bg-brand-primary/10 text-brand-primary font-medium border-l-4 border-brand-primary' 
-                      : 'hover:bg-gray-50'
-                    }`}
-                    onClick={() => setActiveTab('profile')}
-                  >
-                    Profile
-                  </button>
-                </li>
-                <li>
-                  <button
-                    className={`w-full text-left px-4 py-3 ${
-                      activeTab === 'notifications' 
-                      ? 'bg-brand-primary/10 text-brand-primary font-medium border-l-4 border-brand-primary' 
-                      : 'hover:bg-gray-50'
-                    }`}
-                    onClick={() => setActiveTab('notifications')}
-                  >
-                    Notifications
-                  </button>
-                </li>
-                <li>
-                  <button
-                    className={`w-full text-left px-4 py-3 ${
-                      activeTab === 'billing' 
-                      ? 'bg-brand-primary/10 text-brand-primary font-medium border-l-4 border-brand-primary' 
-                      : 'hover:bg-gray-50'
-                    }`}
-                    onClick={() => setActiveTab('billing')}
-                  >
-                    Billing
-                  </button>
-                </li>
-                <li>
-                  <button
-                    className={`w-full text-left px-4 py-3 ${
-                      activeTab === 'security' 
-                      ? 'bg-brand-primary/10 text-brand-primary font-medium border-l-4 border-brand-primary' 
-                      : 'hover:bg-gray-50'
-                    }`}
-                    onClick={() => setActiveTab('security')}
-                  >
-                    Security
-                    </button>
-                </li>
-              </ul>
-            </nav>
-          </Card>
-                  </div>
-        
-        {/* Content Area */}
-        <div className="md:col-span-3">
-          <Card>
-            {activeTab === 'account' && (
-              <div className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Account Settings</h2>
-                <p className="text-gray-600 mb-6">Manage your account settings and preferences.</p>
-                
-                {/* Account settings form */}
-                <form className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring focus:ring-brand-primary focus:ring-opacity-50"
-                      defaultValue="john@example.com"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Name
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring focus:ring-brand-primary focus:ring-opacity-50"
-                      defaultValue="John Doe"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Company
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring focus:ring-brand-primary focus:ring-opacity-50"
-                      defaultValue="Nexus Solutions"
-                    />
-                  </div>
-                  
-                  <div className="mt-6">
-                    <button
-                      type="button"
-                      className="px-4 py-2 bg-brand-primary text-white rounded-md hover:bg-brand-primary/90"
-                    >
-                      Save Changes
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
-            
-            {activeTab === 'profile' && (
-              <div className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Profile</h2>
-                <p className="text-gray-500 mb-6">Update your public profile information.</p>
-                
-                <div className="mb-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="h-20 w-20 rounded-full bg-brand-primary flex items-center justify-center text-white text-xl font-medium">
-                      JD
-                    </div>
-                    <button className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50">
-                      Change Profile Photo
-                    </button>
-                  </div>
-                </div>
-                
-                <form className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Bio
-                    </label>
-                    <textarea
-                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring focus:ring-brand-primary focus:ring-opacity-50"
-                      rows={4}
-                      placeholder="Tell us about yourself"
-                    ></textarea>
-                  </div>
-                  
-                  <div className="mt-6">
-                    <button
-                      type="button"
-                      className="px-4 py-2 bg-brand-primary text-white rounded-md hover:bg-brand-primary/90"
-                    >
-                      Update Profile
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
-            
-            {activeTab === 'notifications' && (
-              <div className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Notifications</h2>
-                <p className="text-gray-500 mb-6">Manage how you receive notifications.</p>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium">Email Notifications</h3>
-                      <p className="text-sm text-gray-500">Receive updates via email</p>
-                    </div>
-                    <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                      <input type="checkbox" name="toggle" id="email-toggle" defaultChecked className="sr-only peer" />
-                      <label htmlFor="email-toggle" className="block h-6 w-11 rounded-full bg-gray-300 peer-checked:bg-brand-primary cursor-pointer transition-colors duration-300"></label>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium">Browser Notifications</h3>
-                      <p className="text-sm text-gray-500">Receive in-app notifications</p>
-                    </div>
-                    <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                      <input type="checkbox" name="toggle" id="browser-toggle" className="sr-only peer" />
-                      <label htmlFor="browser-toggle" className="block h-6 w-11 rounded-full bg-gray-300 peer-checked:bg-brand-primary cursor-pointer transition-colors duration-300"></label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {activeTab === 'billing' && (
-              <div className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Billing</h2>
-                <p className="text-gray-500 mb-6">Manage your billing information and view your subscription.</p>
-                
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                  <h3 className="font-medium text-blue-800">Current Plan: Free</h3>
-                  <p className="text-sm text-blue-600 mt-1">You are currently on the free plan. Upgrade for more features.</p>
-                  <button className="mt-3 px-4 py-2 bg-brand-primary text-white rounded-md hover:bg-brand-primary/90">
-                    Upgrade Plan
-                  </button>
-                </div>
-                
-                <div>
-                  <h3 className="font-medium mb-3">Payment Methods</h3>
-                  <p className="text-gray-500 text-sm">No payment methods added yet.</p>
-                  <button className="mt-3 px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50">
-                    Add Payment Method
-                  </button>
-              </div>
-            </div>
-          )}
-          
-          {activeTab === 'security' && (
-              <div className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Security</h2>
-                <p className="text-gray-500 mb-6">Manage your account security settings.</p>
-                
-                <div className="mb-6">
-                  <h3 className="font-medium mb-3">Change Password</h3>
-                  <form className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Current Password
-                      </label>
-                      <input
-                        type="password"
-                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring focus:ring-brand-primary focus:ring-opacity-50"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        New Password
-                      </label>
-                      <input
-                        type="password"
-                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring focus:ring-brand-primary focus:ring-opacity-50"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Confirm New Password
-                      </label>
-                      <input
-                        type="password"
-                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring focus:ring-brand-primary focus:ring-opacity-50"
-                      />
-                </div>
-                
-                    <div className="mt-6">
-                      <button
-                        type="button"
-                        className="px-4 py-2 bg-brand-primary text-white rounded-md hover:bg-brand-primary/90"
-                      >
-                        Update Password
-                      </button>
-                    </div>
-                  </form>
-                </div>
-                
-                <div>
-                  <h3 className="font-medium mb-3">Two-Factor Authentication</h3>
-                  <p className="text-sm text-gray-500 mb-3">Add an extra layer of security to your account</p>
-                  <button className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50">
-                    Enable 2FA
-                    </button>
-              </div>
-            </div>
-          )}
-          </Card>
+
+      {savedNotice && (
+        <div
+          role="status"
+          className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-base flex items-center gap-2.5"
+        >
+          <CheckCircle2 className="w-5 h-5 shrink-0" />
+          <span>{savedNotice}</span>
         </div>
-      </div>
+      )}
+
+      <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-5">
+        <div className="flex items-center gap-3">
+          <Settings className="w-6 h-6 text-blue-700" />
+          <h2 className="text-2xl font-bold text-slate-900">Reporting &amp; Display Defaults</h2>
+        </div>
+
+        <form onSubmit={handleSave} className="space-y-5 max-w-xl">
+          <div>
+            <label htmlFor="pref-currency" className="block text-base font-medium text-slate-800 mb-1">
+              Default KPI Currency
+            </label>
+            <select
+              id="pref-currency"
+              value={prefs.defaultCurrency}
+              onChange={(e) => setPrefs((p) => ({ ...p, defaultCurrency: e.target.value }))}
+              className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-base text-slate-900"
+            >
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+              <option value="CAD">CAD ($)</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="pref-period" className="block text-base font-medium text-slate-800 mb-1">
+              Default Executive Report Cadence
+            </label>
+            <select
+              id="pref-period"
+              value={prefs.defaultReportPeriod}
+              onChange={(e) => setPrefs((p) => ({ ...p, defaultReportPeriod: e.target.value }))}
+              className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-base text-slate-900"
+            >
+              <option value="Weekly">Weekly</option>
+              <option value="Monthly">Monthly</option>
+              <option value="Quarterly">Quarterly</option>
+              <option value="Annual">Annual</option>
+            </select>
+          </div>
+
+          <div className="flex flex-wrap gap-3 pt-2">
+            <button
+              type="submit"
+              className="inline-flex items-center gap-2 px-6 py-3 min-h-[48px] rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-base font-semibold"
+            >
+              <Save className="w-5 h-5" />
+              Save Preferences
+            </button>
+            <button
+              type="button"
+              onClick={handleResetTour}
+              className="inline-flex items-center gap-2 px-5 py-3 min-h-[48px] rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-900 text-base font-medium"
+            >
+              <Compass className="w-5 h-5" />
+              Reset Guided Tour Prompt
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Link
+          to="/admin/users"
+          className="bg-white rounded-2xl border border-slate-200 p-6 hover:border-blue-400 transition-colors space-y-2"
+        >
+          <Shield className="w-7 h-7 text-blue-700" />
+          <h3 className="text-xl font-bold text-slate-900">Users &amp; Access</h3>
+          <p className="text-base text-slate-600">
+            Add users, manage protected role tiers, and inspect the admin audit log.
+          </p>
+        </Link>
+
+        <Link
+          to="/profile#password"
+          className="bg-white rounded-2xl border border-slate-200 p-6 hover:border-blue-400 transition-colors space-y-2"
+        >
+          <User className="w-7 h-7 text-emerald-700" />
+          <h3 className="text-xl font-bold text-slate-900">Profile &amp; Password</h3>
+          <p className="text-base text-slate-600">
+            Update your personal display details or change your account password.
+          </p>
+        </Link>
+
+        <Link
+          to="/portal-manager"
+          className="bg-white rounded-2xl border border-slate-200 p-6 hover:border-blue-400 transition-colors space-y-2"
+        >
+          <Send className="w-7 h-7 text-indigo-700" />
+          <h3 className="text-xl font-bold text-slate-900">Client Portal Console</h3>
+          <p className="text-base text-slate-600">
+            Review active client deliverables, reissue magic links, and revoke access.
+          </p>
+        </Link>
+      </section>
     </div>
   );
 };
 
-export default SettingsPage; 
+export default SettingsPage;

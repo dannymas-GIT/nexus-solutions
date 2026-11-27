@@ -1,10 +1,20 @@
-"""SQLite/Postgres database for client portal, audit leads, and data convergence workspace."""
+"""SQLite/Postgres database for portal, audit leads, convergence, and RBAC user management."""
 from __future__ import annotations
 
 import os
 from pathlib import Path
 
-from sqlalchemy import Column, DateTime, Float, Integer, String, Text, create_engine, func
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    Integer,
+    String,
+    Text,
+    create_engine,
+    func,
+)
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 Base = declarative_base()
@@ -112,6 +122,35 @@ class ExecutiveReport(Base):
     portal_magic_link_url = Column(String(1024), nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+
+class UserAccount(Base):
+    __tablename__ = "user_accounts"
+
+    id = Column(String(36), primary_key=True)
+    email = Column(String(256), unique=True, index=True, nullable=False)
+    username = Column(String(128), unique=True, index=True, nullable=False)
+    full_name = Column(String(256), nullable=False)
+    organization_name = Column(String(256), default="Nexus Workspace")
+    role = Column(String(32), default="viewer", nullable=False)
+    password_hash = Column(String(512), nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+    must_change_password = Column(Boolean, default=False, nullable=False)
+    last_login_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+
+class AdminAuditLog(Base):
+    __tablename__ = "admin_audit_logs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    actor_user_id = Column(String(36), index=True, nullable=False)
+    actor_email = Column(String(256), nullable=False)
+    action = Column(String(64), nullable=False)
+    target_user_id = Column(String(36), index=True, nullable=True)
+    detail_json = Column(Text, default="{}")
+    created_at = Column(DateTime, server_default=func.now())
 
 
 _engine = None

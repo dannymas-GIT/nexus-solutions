@@ -69,6 +69,31 @@ Add tests for new features here.
 - See "Executive Report Studio"
 - See "Build New Executive Report"
 
+### Test: Users & Access Admin Surface Loads
+**URL:** ${BASE_URL}/admin/users
+**Steps:**
+1. Wait for page load
+**Expected:**
+- Page loads within 5 seconds
+- See "Users & Access"
+
+### Test: Personal Profile Surface Loads
+**URL:** ${BASE_URL}/profile
+**Steps:**
+1. Wait for page load
+**Expected:**
+- Page loads within 5 seconds
+- See "Your Profile"
+
+### Test: Guided Tour Route Loads
+**URL:** ${BASE_URL}/tour
+**Steps:**
+1. Wait for page load
+**Expected:**
+- Page loads within 5 seconds
+- See "Nexus Guided Tour"
+- See "Welcome to Nexus Solutions"
+
 ### Test: Idea Studio Page Loads
 **URL:** ${BASE_URL}/idea-studio
 **Steps:**

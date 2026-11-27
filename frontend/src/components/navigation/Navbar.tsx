@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, ChevronDown, User } from 'lucide-react';
+import { Menu, ChevronDown, User, Compass } from 'lucide-react';
 
 interface NavSubItem {
   label: string;
@@ -17,6 +17,7 @@ interface NavItem {
 
 interface NavbarProps {
   onOpenMobileSidebar?: () => void;
+  onOpenTour?: () => void;
 }
 
 const NAVIGATION_ITEMS: NavItem[] = [
@@ -76,29 +77,29 @@ const NAVIGATION_ITEMS: NavItem[] = [
   },
   {
     label: 'Administration',
-    path: '/team',
-    matchPrefixes: ['/team', '/tutorials', '/settings'],
+    path: '/admin/users',
+    matchPrefixes: ['/admin', '/team', '/tutorials', '/tour', '/settings'],
     submenu: [
       {
-        label: 'Team & Access',
-        path: '/team',
-        description: 'Manage workspace members and roles',
+        label: 'Users & Access',
+        path: '/admin/users',
+        description: 'Manage users, protected role tiers, password resets, and audit logs',
       },
       {
         label: 'Workspace Settings',
         path: '/settings',
-        description: 'Configure workspace preferences',
+        description: 'Configure reporting and workspace preferences',
       },
       {
-        label: 'Guides & Tutorials',
+        label: 'Guides & Guided Tour',
         path: '/tutorials',
-        description: 'Platform walkthroughs and documentation',
+        description: 'Interactive 5-step walkthrough and operator playbooks',
       },
     ],
   },
 ];
 
-const Navbar: React.FC<NavbarProps> = ({ onOpenMobileSidebar }) => {
+const Navbar: React.FC<NavbarProps> = ({ onOpenMobileSidebar, onOpenTour }) => {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const location = useLocation();
 
@@ -213,18 +214,22 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenMobileSidebar }) => {
           </nav>
         </div>
 
-        {/* Account cluster (outside primary domains) */}
+        {/* Account & Help cluster (outside primary domains) */}
         <div className="flex items-center gap-2 shrink-0">
-          <Link
-            to="/request-audit"
-            className="hidden xl:inline-flex items-center px-4 py-2 min-h-[44px] rounded-lg border border-blue-200 bg-blue-50 text-blue-900 hover:bg-blue-100 text-base font-medium transition-colors"
-          >
-            Request Audit
-          </Link>
+          {onOpenTour && (
+            <button
+              type="button"
+              onClick={onOpenTour}
+              className="hidden xl:inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-lg border border-blue-200 bg-blue-50 text-blue-900 hover:bg-blue-100 text-base font-medium transition-colors"
+            >
+              <Compass className="h-4 w-4" />
+              <span>Guided tour</span>
+            </button>
+          )}
 
           <Link
             to="/profile"
-            className={`inline-flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-lg text-base font-medium transition-colors ${
+            className={`inline-flex items-center gap-2 px-3.5 py-2 min-h-[44px] rounded-lg text-base font-medium transition-colors ${
               location.pathname === '/profile'
                 ? 'bg-slate-900 text-white'
                 : 'bg-slate-100 text-slate-800 hover:bg-slate-200'

@@ -41,7 +41,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
             <div className="p-4">
               <h3 className="font-semibold text-lg text-nexus-blue">{image.name}</h3>
               <p className="text-gray-600 text-sm mt-2">{image.description}</p>
-              <div className="mt-3 text-xs text-gray-500">{image.path}</div>
+              <div className="mt-3 text-sm text-gray-500">{image.path}</div>
               <a 
                 href={image.path} 
                 target="_blank" 

@@ -1901,12 +1901,12 @@ const IdeaStudioPage: React.FC<IdeaStudioPageProps> = ({
                         {item.title}
                       </strong>
                       {item.tag && (
-                        <code className="text-xs px-1.5 py-0.5 rounded bg-white border border-gray-200 text-gray-700">
+                        <code className="text-sm px-1.5 py-0.5 rounded bg-white border border-gray-200 text-gray-700">
                           {item.tag}
                         </code>
                       )}
                       {isActive && (
-                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-primary text-white">
+                        <span className="text-sm font-semibold px-2 py-0.5 rounded-full bg-brand-primary text-white">
                           Current
                         </span>
                       )}
