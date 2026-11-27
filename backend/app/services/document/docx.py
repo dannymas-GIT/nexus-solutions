@@ -13,7 +13,6 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 from ...core.config import settings
 from .base import DocumentService
-from ..storage import get_storage_service
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ class DocxDocumentService(DocumentService):
     
     def __init__(self):
         self.templates_path = Path(settings.DOCX_TEMPLATES_PATH)
-        self.storage_service = get_storage_service()
+        self.storage_service = None
         
         # Ensure the templates directory exists
         self._ensure_templates_path_exists()

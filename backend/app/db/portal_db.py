@@ -1,4 +1,4 @@
-"""SQLite/Postgres portal database for client deliverable review."""
+"""SQLite/Postgres database for client deliverable review and corporate audit leads."""
 from __future__ import annotations
 
 import os
@@ -47,8 +47,33 @@ class PortalAction(Base):
     sent_to_origin_at = Column(DateTime, nullable=True)
 
 
+class AuditLead(Base):
+    __tablename__ = "audit_leads"
+
+    id = Column(String(36), primary_key=True)
+    name = Column(String(256), nullable=False)
+    email = Column(String(256), index=True, nullable=False)
+    company = Column(String(256), nullable=False)
+    role = Column(String(256), default="")
+    data_sources_json = Column(Text, default="[]")
+    pain_point = Column(Text, default="")
+    website = Column(String(512), default="")
+    source_page = Column(String(128), default="/request-audit")
+    status = Column(String(32), default="new")
+    created_at = Column(DateTime, server_default=func.now())
+
+
 _engine = None
 _SessionLocal = None
+
+
+def reset_engine() -> None:
+    """Reset cached SQLAlchemy engine/sessionmaker (used in tests)."""
+    global _engine, _SessionLocal
+    if _engine is not None:
+        _engine.dispose()
+    _engine = None
+    _SessionLocal = None
 
 
 def get_engine():
@@ -76,7 +101,7 @@ def get_session_factory():
 
 def get_db():
     factory = get_session_factory()
-    db = factory()
+    db: Session = factory()
     try:
         yield db
     finally:

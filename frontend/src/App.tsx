@@ -13,123 +13,164 @@ import PortalPage from './pages/PortalPage';
 import ServicesPage from './pages/ServicesPage';
 import PackagesPage from './pages/PackagesPage';
 import IdeaStudioPage from './pages/IdeaStudioPage';
+import RequestAuditPage from './pages/RequestAuditPage';
 
 /**
- * App component
- * 
- * Main application component with routing configuration
+ * Main application component with routing configuration.
  */
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Public marketing routes (MarketingNavbar, no app sidebar) */}
         <Route path="/" element={<SplashPage />} />
         <Route path="/services" element={<ServicesPage />} />
+        <Route path="/request-audit" element={<RequestAuditPage />} />
         <Route path="/packages" element={<PackagesPage />} />
-        {/* Client deliverable review (magic link — no app chrome) */}
+
+        {/* Client deliverable review (magic link — dedicated client portal chrome) */}
         <Route path="/portal/:token" element={<PortalPage />} />
-        
-        {/* Main app routes with Layout */}
-        <Route path="/dashboard" element={
-          <Layout>
-            <Dashboard />
-          </Layout>
-        } />
-        
+
+        {/* Main app routes with Workspace Layout */}
+        <Route
+          path="/dashboard"
+          element={
+            <Layout>
+              <Dashboard />
+            </Layout>
+          }
+        />
+
         {/* Document routes */}
-        <Route path="/docs" element={
-          <Layout>
-            <DocViewerPage />
-          </Layout>
-        } />
-        <Route path="/docs/:category" element={
-          <Layout>
-            <DocViewerPage />
-          </Layout>
-        } />
-        <Route path="/docs/:category/:id" element={
-          <Layout>
-            <DocViewerPage />
-          </Layout>
-        } />
-        
+        <Route
+          path="/docs"
+          element={
+            <Layout>
+              <DocViewerPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/docs/:category"
+          element={
+            <Layout>
+              <DocViewerPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/docs/:category/:id"
+          element={
+            <Layout>
+              <DocViewerPage />
+            </Layout>
+          }
+        />
+
         {/* Business Plan routes — unified with Idea Studio */}
-        <Route path="/create-business-plan" element={
-          <Layout>
-            <BusinessPlanWizard />
-          </Layout>
-        } />
-        <Route path="/my-plans" element={
-          <Layout>
-            <IdeaStudioPage defaultTab="inbox" />
-          </Layout>
-        } />
-        <Route path="/plan-templates" element={
-          <Layout>
-            <BusinessPlanWizard />
-          </Layout>
-        } />
-        
+        <Route
+          path="/create-business-plan"
+          element={
+            <Layout>
+              <BusinessPlanWizard />
+            </Layout>
+          }
+        />
+        <Route
+          path="/my-plans"
+          element={
+            <Layout>
+              <IdeaStudioPage defaultTab="inbox" />
+            </Layout>
+          }
+        />
+        <Route
+          path="/plan-templates"
+          element={
+            <Layout>
+              <BusinessPlanWizard />
+            </Layout>
+          }
+        />
+
         {/* Team Management */}
-        <Route path="/team" element={
-          <Layout>
-            <TeamPage />
-          </Layout>
-        } />
-        
+        <Route
+          path="/team"
+          element={
+            <Layout>
+              <TeamPage />
+            </Layout>
+          }
+        />
+
         {/* Tutorials */}
-        <Route path="/tutorials" element={
-          <Layout>
-            <TutorialsPage />
-          </Layout>
-        } />
-        
+        <Route
+          path="/tutorials"
+          element={
+            <Layout>
+              <TutorialsPage />
+            </Layout>
+          }
+        />
+
         {/* Integrations */}
-        <Route path="/integrations" element={
-          <Layout>
-            <IntegrationsPage />
-          </Layout>
-        } />
-        
+        <Route
+          path="/integrations"
+          element={
+            <Layout>
+              <IntegrationsPage />
+            </Layout>
+          }
+        />
+
         {/* Analysis Engine routes */}
-        <Route path="/analysis-engine/set-kpis" element={
-          <Layout>
-            <SetKpisPage />
-          </Layout>
-        } />
+        <Route
+          path="/analysis-engine/set-kpis"
+          element={
+            <Layout>
+              <SetKpisPage />
+            </Layout>
+          }
+        />
 
         {/* Idea Studio routes */}
-        <Route path="/idea-studio" element={
-          <Layout>
-            <IdeaStudioPage />
-          </Layout>
-        } />
-        <Route path="/idea-studio/:tab" element={
-          <Layout>
-            <IdeaStudioPage />
-          </Layout>
-        } />
-        
+        <Route
+          path="/idea-studio"
+          element={
+            <Layout>
+              <IdeaStudioPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/idea-studio/:tab"
+          element={
+            <Layout>
+              <IdeaStudioPage />
+            </Layout>
+          }
+        />
+
         {/* Settings */}
-        <Route path="/settings" element={
-          <Layout>
-            <SettingsPage />
-          </Layout>
-        } />
-        
-        <Route path="/settings/security-analysis" element={
-          <Layout>
-            <div>Security Analysis Page (Placeholder)</div>
-          </Layout>
-        } />
-        
+        <Route
+          path="/settings"
+          element={
+            <Layout>
+              <SettingsPage />
+            </Layout>
+          }
+        />
+
         {/* Profile */}
-        <Route path="/profile" element={
-          <Layout>
-            <SettingsPage />
-          </Layout>
-        } />
-        
+        <Route
+          path="/profile"
+          element={
+            <Layout>
+              <SettingsPage />
+            </Layout>
+          }
+        />
+
         {/* Catch-all route */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
@@ -137,4 +178,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;

@@ -1,6 +1,6 @@
 # Nexus Solutions - QA Test Suite
 
-Automated browser tests for Nexus Business Builder. Required per developer contract.
+Automated browser tests for Nexus Solutions. Required per developer contract.
 Pipeline runs these tests on push; failures block staging and production.
 
 ## Variables
@@ -18,14 +18,25 @@ These run on every pipeline. Keep fast (< 30 seconds total).
 1. Wait for page load
 **Expected:**
 - Page loads within 3 seconds
-- See "Nexus" or "Business" or "Welcome"
+- See "Request Data Convergence Audit"
 
-### Test: Root Responds
-**URL:** ${BASE_URL}/
+### Test: Corporate Services Page
+**URL:** ${BASE_URL}/services
 **Steps:**
-1. Wait 2
+1. Wait for page load
 **Expected:**
 - Page loads within 5 seconds
+- See "Nexus Corporate Services"
+- See "Request Data Convergence Audit"
+
+### Test: Request Audit Form
+**URL:** ${BASE_URL}/request-audit
+**Steps:**
+1. Wait for page load
+**Expected:**
+- Page loads within 5 seconds
+- See "Request a Data Convergence Audit"
+- See "Work Email"
 
 ## Feature Tests
 

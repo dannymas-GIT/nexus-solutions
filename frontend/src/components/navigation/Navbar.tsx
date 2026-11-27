@@ -1,436 +1,266 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  Menu,
-  X,
-  ChevronDown,
-  Search,
-  Bell,
-  User,
-  HelpCircle,
-} from 'lucide-react';
+import { Menu, ChevronDown, User } from 'lucide-react';
+
+interface NavSubItem {
+  label: string;
+  path: string;
+  description?: string;
+}
 
 interface NavItem {
   label: string;
   path: string;
-  submenu?: {
-    label: string;
-    path: string;
-    description?: string;
-  }[];
+  matchPrefixes?: string[];
+  submenu?: NavSubItem[];
 }
 
-const Navbar: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
+interface NavbarProps {
+  onOpenMobileSidebar?: () => void;
+}
+
+const NAVIGATION_ITEMS: NavItem[] = [
+  {
+    label: 'Command Center',
+    path: '/dashboard',
+    matchPrefixes: ['/dashboard'],
+  },
+  {
+    label: 'Idea Studio',
+    path: '/idea-studio',
+    matchPrefixes: ['/idea-studio', '/create-business-plan', '/my-plans', '/plan-templates'],
+    submenu: [
+      {
+        label: 'Submit Brief',
+        path: '/idea-studio/submit',
+        description: 'Submit a new concept for M1/M2 validation',
+      },
+      {
+        label: 'Milestone & Approval Inbox',
+        path: '/idea-studio/inbox',
+        description: 'Review M1/M2 reports and sequential approval gates',
+      },
+      {
+        label: 'App Workspace & Staging',
+        path: '/idea-studio/workspace',
+        description: 'Graduated apps, sprints, and *.nexus-solutions.us staging',
+      },
+      {
+        label: 'Strategic Plan Wizard',
+        path: '/create-business-plan',
+        description: '5-step plan builder with DOCX, PPTX, and PDF export',
+      },
+    ],
+  },
+  {
+    label: 'Data & KPIs',
+    path: '/analysis-engine/set-kpis',
+    matchPrefixes: ['/analysis-engine', '/integrations'],
+    submenu: [
+      {
+        label: 'Set KPIs',
+        path: '/analysis-engine/set-kpis',
+        description: 'Define and track operational KPIs',
+      },
+      {
+        label: 'Data Sources & Integrations',
+        path: '/integrations',
+        description: 'Manage CRM, finance, and ops connectors',
+      },
+    ],
+  },
+  {
+    label: 'Documents',
+    path: '/docs',
+    matchPrefixes: ['/docs'],
+    submenu: [
+      {
+        label: 'Document Library',
+        path: '/docs',
+        description: 'Browse collateral, reports, and templates',
+      },
+      {
+        label: 'Marketing Materials',
+        path: '/docs/marketing',
+        description: 'Value propositions and datasheets',
+      },
+      {
+        label: 'Presentations',
+        path: '/docs/presentations',
+        description: 'Decks and sales scripts',
+      },
+    ],
+  },
+  {
+    label: 'Administration',
+    path: '/team',
+    matchPrefixes: ['/team', '/tutorials', '/settings'],
+    submenu: [
+      {
+        label: 'Team & Access',
+        path: '/team',
+        description: 'Manage workspace members and roles',
+      },
+      {
+        label: 'Workspace Settings',
+        path: '/settings',
+        description: 'Configure workspace preferences',
+      },
+      {
+        label: 'Guides & Tutorials',
+        path: '/tutorials',
+        description: 'Platform walkthroughs and documentation',
+      },
+    ],
+  },
+];
+
+const Navbar: React.FC<NavbarProps> = ({ onOpenMobileSidebar }) => {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const location = useLocation();
 
-  // Navigation items with dropdown submenus - RESTRUCTURED & REORDERED
-  const navigationItems: NavItem[] = [
-    {
-      label: 'Dashboard',
-      path: '/dashboard',
-    },
-    {
-      label: 'Idea Studio',
-      path: '/idea-studio',
-      submenu: [
-        {
-          label: 'Submit Brief',
-          path: '/idea-studio/submit',
-          description: 'Submit a new product concept for M1/M2 validation'
-        },
-        {
-          label: 'Milestone & Approval Inbox',
-          path: '/idea-studio/inbox',
-          description: 'Review M1/M2 reports and sequential approval gates'
-        },
-        {
-          label: 'My App Workspace',
-          path: '/idea-studio/workspace',
-          description: 'Graduate apps, run sprints, staging, and FinOps rollups'
-        }
-      ]
-    },
-    {
-      label: 'Business Plans',
-      path: '/create-business-plan',
-      submenu: [
-        { 
-          label: 'Create New Plan', 
-          path: '/create-business-plan',
-          description: '5-step intake wizard wired into Idea Studio' 
-        },
-        { 
-          label: 'My Plans & Briefs', 
-          path: '/my-plans',
-          description: 'View submitted plans, M1/M2 reports, and gates'
-        },
-        { 
-          label: 'App Workspace & Staging', 
-          path: '/idea-studio/workspace',
-          description: 'Graduated apps, sprints, and *.nexus-solutions.us previews'
-        }
-      ]
-    },
-    {
-      label: 'Analysis Engine',
-      path: '/analysis-engine',
-      submenu: [
-        {
-          label: 'Set KPIs',
-          path: '/analysis-engine/set-kpis',
-          description: 'Define Key Performance Indicators'
-        }
-      ]
-    },
-    {
-      label: 'Documents',
-      path: '/docs',
-      submenu: [
-        { 
-          label: 'Marketing Materials', 
-          path: '/docs/marketing',
-          description: 'Brochures, value propositions, and datasheets'
-        },
-        { 
-          label: 'Case Studies', 
-          path: '/docs/case-studies',
-          description: 'Customer success stories and implementations'
-        },
-        { 
-          label: 'Presentations', 
-          path: '/docs/presentations',
-          description: 'Slides, decks and presentation materials'
-        },
-        { 
-          label: 'Images & Graphics', 
-          path: '/docs/images',
-          description: 'Logos, illustrations and brand assets'
-        }
-      ]
-    },
-    // Grouped Items under "Settings"
-    {
-      label: 'Settings',
-      path: '/settings', // Main path for the group
-      submenu: [
-        {
-          label: 'Team Management',
-          path: '/team',
-          description: 'Manage users, roles, and permissions'
-        },
-        {
-          label: 'Tutorials & Help',
-          path: '/tutorials',
-          description: 'Learn how to use the platform effectively'
-        },
-        {
-          label: 'Integrations',
-          path: '/integrations',
-          description: 'Connect with other tools and services'
-        },
-        {
-          label: 'Account Settings',
-          path: '/settings',
-          description: 'Manage your profile and account preferences'
-        },
-        {
-          label: 'Security Analysis',
-          path: '/settings/security-analysis',
-          description: 'AI-powered security footprint analysis'
-        }
-      ]
-    }
-  ];
-
-  // Handle dropdown menu toggle
   const toggleDropdown = (label: string) => {
-    if (openDropdown === label) {
-      setOpenDropdown(null);
-    } else {
-      setOpenDropdown(label);
-    }
+    setOpenDropdown((prev) => (prev === label ? null : label));
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => {
-      setOpenDropdown(null);
+    const handleClickOutside = () => setOpenDropdown(null);
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpenDropdown(null);
     };
-
     document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
   }, []);
 
-  // Prevent closing when clicking inside dropdown
-  const handleDropdownClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const isSectionActive = (item: NavItem) => {
+    const prefixes = item.matchPrefixes || [item.path];
+    return prefixes.some(
+      (prefix) => location.pathname === prefix || location.pathname.startsWith(`${prefix}/`)
+    );
   };
 
   return (
-    <nav 
-      className="fixed top-0 w-full z-50 transition-all duration-300 bg-white shadow-md"
-    >
-      <div className="mx-auto px-4 sm:px-6 lg:pl-0 lg:pr-6">
-        <div className="flex justify-between h-28">
-          {/* Left side: Desktop navigation Links ONLY */}
-          <div className="flex items-center h-full">
-            {/* Logo and Motto for Splash Page */}
-            {location.pathname === '/' && (
-              <Link to="/" className="flex flex-col items-start ml-24 mr-24">
-                <img 
-                  className="w-80 h-20"
-                  src="/images/logo-light.png"
-                  alt="Nexus"
-                />
-                <p className="text-lg w-80 text-center text-black italic font-medium font-serif leading-none">
-                  Where data converges, insight emerges.
-                </p>
-              </Link>
-            )}
-            
-            {/* Desktop Navigation Links */}
-            <div className="hidden md:flex items-center h-full space-x-1">
-              {navigationItems.map((item) => (
-                <div key={item.label} className="relative h-full flex items-center" onClick={handleDropdownClick}>
+    <header className="sticky top-0 z-30 w-full bg-white border-b border-slate-200 shadow-sm">
+      <div className="px-4 sm:px-6 flex items-center justify-between min-h-[4.5rem] gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          {onOpenMobileSidebar && (
+            <button
+              type="button"
+              onClick={onOpenMobileSidebar}
+              className="lg:hidden inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg text-slate-700 hover:bg-slate-100"
+              aria-label="Open workspace navigation"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+          )}
+
+          <Link
+            to="/"
+            className="lg:hidden flex items-center gap-2 min-h-[44px] pr-2 text-slate-900 font-bold text-lg"
+          >
+            <img src="/favicon.svg" alt="Nexus" className="h-8 w-8" />
+            <span>Nexus</span>
+          </Link>
+
+          <nav
+            aria-label="Workspace navigation"
+            className="hidden md:flex items-center gap-1"
+          >
+            {NAVIGATION_ITEMS.map((item) => {
+              const active = isSectionActive(item);
+              return (
+                <div
+                  key={item.label}
+                  className="relative"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   {item.submenu ? (
-                    <div className="h-full flex items-center">
+                    <>
                       <button
+                        type="button"
+                        aria-expanded={openDropdown === item.label}
                         onClick={() => toggleDropdown(item.label)}
-                        className={`flex items-center px-3 py-2 text-base font-medium rounded-md ${
-                          location.pathname.startsWith(item.path) || openDropdown === item.label
-                            ? 'text-blue-600'
-                            : 'text-gray-700 hover:text-blue-500 hover:bg-gray-100'
+                        className={`inline-flex items-center gap-1.5 px-3.5 py-2.5 min-h-[44px] rounded-lg text-base font-medium transition-colors ${
+                          active || openDropdown === item.label
+                            ? 'bg-blue-50 text-blue-700'
+                            : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                         }`}
                       >
                         {item.label}
-                        <ChevronDown 
-                          size={16} 
-                          className={`ml-1 transition-transform ${
-                            openDropdown === item.label ? 'transform rotate-180' : ''
+                        <ChevronDown
+                          size={16}
+                          className={`transition-transform ${
+                            openDropdown === item.label ? 'rotate-180' : ''
                           }`}
                         />
                       </button>
-                      
-                      {/* Dropdown Menu */}
+
                       {openDropdown === item.label && (
-                        <div 
-                          className="absolute top-full left-0 w-60 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
-                        >
-                          <div className="py-1">
-                            {item.submenu.map((subItem) => (
-                              <Link
-                                key={subItem.path}
-                                to={subItem.path}
-                                onClick={() => setOpenDropdown(null)}
-                                className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
-                              >
-                                <div className="font-medium">{subItem.label}</div>
-                                {subItem.description && (
-                                  <p className="text-xs text-gray-500 mt-1">{subItem.description}</p>
-                                )}
-                              </Link>
-                            ))}
-                          </div>
+                        <div className="absolute left-0 top-full mt-1.5 w-72 bg-white rounded-xl shadow-lg border border-slate-200 py-1.5 z-50">
+                          {item.submenu.map((subItem) => (
+                            <Link
+                              key={subItem.path}
+                              to={subItem.path}
+                              onClick={() => setOpenDropdown(null)}
+                              className="block px-4 py-3 text-base text-slate-800 hover:bg-slate-50"
+                            >
+                              <div className="font-medium text-slate-900">{subItem.label}</div>
+                              {subItem.description && (
+                                <p className="text-sm text-slate-600 mt-0.5 leading-snug">
+                                  {subItem.description}
+                                </p>
+                              )}
+                            </Link>
+                          ))}
                         </div>
                       )}
-                    </div>
+                    </>
                   ) : (
                     <Link
                       to={item.path}
-                      className={`flex items-center px-3 py-2 text-base font-medium rounded-md ${
-                        location.pathname === item.path
-                          ? 'text-blue-600'
-                          : 'text-gray-700 hover:text-blue-500 hover:bg-gray-100'
+                      className={`inline-flex items-center px-3.5 py-2.5 min-h-[44px] rounded-lg text-base font-medium transition-colors ${
+                        active
+                          ? 'bg-blue-50 text-blue-700'
+                          : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                       }`}
                     >
                       {item.label}
                     </Link>
                   )}
                 </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Right side - Search and user actions */}
-          <div className="flex items-center space-x-4 pr-6">
-            {/* Search */}
-            <div className="hidden md:flex relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                placeholder="Search..."
-                className="pl-10 pr-3 py-1.5 w-56 text-sm bg-gray-100 border-0 rounded-full focus:ring-2 focus:ring-blue-500 focus:bg-white"
-              />
-            </div>
-            
-            {/* Notification icon */}
-            <button className="p-1.5 rounded-full text-gray-500 hover:bg-gray-100">
-              <Bell size={20} />
-            </button>
-            
-            {/* Help icon */}
-            <button className="p-1.5 rounded-full text-gray-500 hover:bg-gray-100">
-              <HelpCircle size={20} />
-            </button>
-            
-            {/* User profile */}
-            <div className="relative ml-3">
-              <button 
-                className="flex items-center bg-gray-100 p-1 rounded-full hover:bg-gray-200 focus:outline-none"
-                onClick={() => toggleDropdown('profile')}
-              >
-                <div className="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center">
-                  <User size={18} />
-                </div>
-              </button>
-              
-              {/* User dropdown */}
-              {openDropdown === 'profile' && (
-                <div 
-                  className="absolute right-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
-                  onClick={handleDropdownClick}
-                >
-                  <div className="px-4 py-2 border-b border-gray-100">
-                    <p className="text-sm font-medium text-gray-900">John Doe</p>
-                    <p className="text-xs text-gray-500">john@example.com</p>
-                  </div>
-                  <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    Your Profile
-                  </Link>
-                  <Link to="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    Settings
-                  </Link>
-                  <Link to="/logout" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    Sign out
-                  </Link>
-                </div>
-              )}
-            </div>
-            
-            {/* Mobile menu button */}
-            <div className="flex md:hidden">
-              <button
-                type="button"
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-500 hover:bg-gray-100"
-                onClick={() => setIsOpen(!isOpen)}
-              >
-                <span className="sr-only">Open main menu</span>
-                {isOpen ? (
-                  <X className="block h-6 w-6" aria-hidden="true" />
-                ) : (
-                  <Menu className="block h-6 w-6" aria-hidden="true" />
-                )}
-              </button>
-            </div>
-          </div>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Account cluster (outside primary domains) */}
+        <div className="flex items-center gap-2 shrink-0">
+          <Link
+            to="/request-audit"
+            className="hidden xl:inline-flex items-center px-4 py-2 min-h-[44px] rounded-lg border border-blue-200 bg-blue-50 text-blue-800 hover:bg-blue-100 text-base font-medium transition-colors"
+          >
+            Request Audit
+          </Link>
+
+          <Link
+            to="/profile"
+            className={`inline-flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-lg text-base font-medium transition-colors ${
+              location.pathname === '/profile'
+                ? 'bg-slate-900 text-white'
+                : 'bg-slate-100 text-slate-800 hover:bg-slate-200'
+            }`}
+          >
+            <User className="h-5 w-5" />
+            <span className="hidden sm:inline">Profile</span>
+          </Link>
         </div>
       </div>
-
-      {/* Mobile menu, show/hide based on menu state */}
-      {isOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {navigationItems.map((item) => (
-              <div key={item.label}>
-                {item.submenu ? (
-                  <>
-                    <button
-                      onClick={() => toggleDropdown(item.label)}
-                      className="w-full flex justify-between items-center px-3 py-2 text-base font-medium rounded-md text-gray-700 hover:text-blue-500 hover:bg-gray-100"
-                    >
-                      {item.label}
-                      <ChevronDown 
-                        size={16} 
-                        className={openDropdown === item.label ? 'transform rotate-180' : ''}
-                      />
-                    </button>
-                    
-                    {openDropdown === item.label && (
-                      <div className="pl-4 space-y-1 mt-1">
-                        {item.submenu.map((subItem) => (
-                          <Link
-                            key={subItem.path}
-                            to={subItem.path}
-                            className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-                          >
-                            {subItem.label}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <Link
-                    to={item.path}
-                    className={`block px-3 py-2 rounded-md text-base font-medium ${
-                      location.pathname === item.path 
-                        ? 'text-blue-600' 
-                        : 'text-gray-700 hover:text-blue-500 hover:bg-gray-100'
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                )}
-              </div>
-            ))}
-          </div>
-          
-          {/* Mobile search */}
-          <div className="px-4 py-3 border-t border-gray-200">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                placeholder="Search..."
-                className="pl-10 pr-3 py-2 w-full text-sm bg-gray-100 border-0 rounded-md focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-          
-          {/* Mobile profile */}
-          <div className="pt-4 pb-3 border-t border-gray-200">
-            <div className="flex items-center px-4">
-              <div className="flex-shrink-0">
-                <div className="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center">
-                  <User size={20} />
-                </div>
-              </div>
-              <div className="ml-3">
-                <div className="text-base font-medium text-gray-800">John Doe</div>
-                <div className="text-sm font-medium text-gray-500">john@example.com</div>
-              </div>
-            </div>
-            <div className="mt-3 space-y-1 px-2">
-              <Link
-                to="/profile"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-              >
-                Your Profile
-              </Link>
-              <Link
-                to="/settings"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-              >
-                Settings
-              </Link>
-              <Link
-                to="/logout"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-              >
-                Sign out
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
-    </nav>
+    </header>
   );
 };
 
-export default Navbar; 
+export default Navbar;

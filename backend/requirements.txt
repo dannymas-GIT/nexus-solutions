@@ -6,10 +6,15 @@ pydantic>=2.0.0
 pydantic-settings>=2.0.0
 python-multipart>=0.0.6
 
-# Client portal (Income deliverables)
+# Client portal & leads persistence
 sqlalchemy>=2.0.0
 PyJWT>=2.8.0
 boto3>=1.34.0
 
-# Existing routes
+# Document generation (DOCX, PPTX, PDF)
+python-docx>=1.1.0
+python-pptx>=1.0.0
+reportlab>=4.0.0
+
+# Upstream proxies & HTTP clients
 requests>=2.31.0

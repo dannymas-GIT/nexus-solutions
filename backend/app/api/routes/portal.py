@@ -1,6 +1,7 @@
-"""Client portal API — magic links, bundle upload, outbound polling for OpenClaw."""
+"""Client portal API — magic links, safe bundle upload, download, outbound polling for OpenClaw."""
 from __future__ import annotations
 
+import hmac
 import io
 import json
 import logging
@@ -9,13 +10,14 @@ import shutil
 import tarfile
 import time
 import uuid
+import zipfile
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
 import jwt
 from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session
 
@@ -25,17 +27,91 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/portal", tags=["portal"])
 
-BUNDLE_ROOT = Path(os.environ.get("PORTAL_BUNDLE_ROOT", "./data/portal_bundles")).resolve()
-JWT_SECRET = os.environ.get("PORTAL_JWT_SECRET", "change-me-in-production")
-API_KEY_EXPECTED = os.environ.get("PORTAL_API_KEY", "").strip()
-PUBLIC_BASE = os.environ.get("PORTAL_PUBLIC_BASE", "https://nexus-solutions.us").rstrip("/")
+INSECURE_DEFAULT_SECRETS = {"", "change-me-in-production", "changeme", "secret"}
+
+
+def _bundle_root() -> Path:
+    return Path(os.environ.get("PORTAL_BUNDLE_ROOT", "./data/portal_bundles")).resolve()
+
+
+def _jwt_secret() -> str:
+    secret = (os.environ.get("PORTAL_JWT_SECRET") or "").strip()
+    if secret in INSECURE_DEFAULT_SECRETS:
+        raise HTTPException(
+            status_code=503,
+            detail="PORTAL_JWT_SECRET must be configured with a strong secret",
+        )
+    return secret
+
+
+def _public_base() -> str:
+    return os.environ.get("PORTAL_PUBLIC_BASE", "https://nexus-solutions.us").rstrip("/")
 
 
 def _require_api_key(x_portal_api_key: Optional[str] = Header(None, alias="X-Portal-Api-Key")):
-    if not API_KEY_EXPECTED:
+    expected = (os.environ.get("PORTAL_API_KEY") or "").strip()
+    if not expected:
         raise HTTPException(status_code=503, detail="PORTAL_API_KEY not configured on server")
-    if not x_portal_api_key or x_portal_api_key.strip() != API_KEY_EXPECTED:
+    if not x_portal_api_key or not hmac.compare_digest(x_portal_api_key.strip(), expected):
         raise HTTPException(status_code=401, detail="invalid API key")
+
+
+def _safe_extract_tar_gz(raw: bytes, dest_root: Path) -> None:
+    """Safely extract a gzipped tarball preventing TarSlip, symlinks, and device nodes."""
+    resolved_root = dest_root.resolve()
+    with tarfile.open(fileobj=io.BytesIO(raw), mode="r:gz") as tf:
+        members = tf.getmembers()
+        for member in members:
+            if member.issym() or member.islnk() or member.isdev() or member.isfifo():
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"unsafe archive member type: {member.name}",
+                )
+            member_path = Path(member.name)
+            if member_path.is_absolute() or ".." in member_path.parts:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"unsafe archive member path: {member.name}",
+                )
+            target = (resolved_root / member_path).resolve()
+            if not target.is_relative_to(resolved_root):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"archive member escapes bundle root: {member.name}",
+                )
+        for member in members:
+            target = (resolved_root / member.name).resolve()
+            if member.isdir():
+                target.mkdir(parents=True, exist_ok=True)
+            elif member.isfile():
+                target.parent.mkdir(parents=True, exist_ok=True)
+                src = tf.extractfile(member)
+                if src is not None:
+                    with open(target, "wb") as out:
+                        shutil.copyfileobj(src, out)
+
+
+def _validate_portal_token(token: str, db: Session) -> tuple[PortalDeliverable, PortalMagicLink, dict]:
+    """Decode JWT and verify backing deliverable + non-expired magic link."""
+    secret = _jwt_secret()
+    try:
+        claims = jwt.decode(token, secret, algorithms=["HS256"])
+    except jwt.PyJWTError as e:
+        raise HTTPException(status_code=401, detail=f"invalid token: {e}") from e
+    did = claims.get("sub")
+    jti = claims.get("jti")
+    if not did or not jti:
+        raise HTTPException(status_code=401, detail="invalid claims")
+
+    d = db.query(PortalDeliverable).filter(PortalDeliverable.id == did).first()
+    if not d:
+        raise HTTPException(status_code=404, detail="deliverable gone")
+    ml = db.query(PortalMagicLink).filter(PortalMagicLink.jti == jti).first()
+    if not ml or ml.deliverable_id != did:
+        raise HTTPException(status_code=401, detail="unknown link")
+    if ml.expires_at and ml.expires_at < datetime.utcnow():
+        raise HTTPException(status_code=401, detail="expired")
+    return d, ml, claims
 
 
 class DeliverableCreate(BaseModel):
@@ -92,7 +168,7 @@ def create_deliverable(
 ):
     did = str(uuid.uuid4())
     exp = datetime.utcnow() + timedelta(days=max(1, min(body.expires_in_days, 90)))
-    bundle_dir = BUNDLE_ROOT / did
+    bundle_dir = _bundle_root() / did
     bundle_dir.mkdir(parents=True, exist_ok=True)
     d = PortalDeliverable(
         id=did,
@@ -125,16 +201,17 @@ async def upload_bundle(
     raw = await bundle.read()
     if not raw:
         raise HTTPException(status_code=400, detail="empty bundle")
-    root = Path(d.bundle_root or (BUNDLE_ROOT / deliverable_id))
+    root = Path(d.bundle_root or (_bundle_root() / deliverable_id))
     root.mkdir(parents=True, exist_ok=True)
     for child in list(root.iterdir()):
-        if child.is_file():
+        if child.is_file() or child.is_symlink():
             child.unlink()
         elif child.is_dir():
             shutil.rmtree(child)
     try:
-        with tarfile.open(fileobj=io.BytesIO(raw), mode="r:gz") as tf:
-            tf.extractall(path=root)
+        _safe_extract_tar_gz(raw, root)
+    except HTTPException:
+        raise
     except tarfile.TarError as e:
         raise HTTPException(status_code=400, detail=f"invalid tarball: {e}") from e
     d.status = "ready"
@@ -150,6 +227,7 @@ def mint_link(
     _: None = Depends(_require_api_key),
     db: Session = Depends(get_db),
 ):
+    secret = _jwt_secret()
     d = db.query(PortalDeliverable).filter(PortalDeliverable.id == deliverable_id).first()
     if not d:
         raise HTTPException(status_code=404, detail="not found")
@@ -171,10 +249,10 @@ def mint_link(
 
     token = jwt.encode(
         {"sub": deliverable_id, "jti": jti, "exp": exp_ts, "typ": "portal"},
-        JWT_SECRET,
+        secret,
         algorithm="HS256",
     )
-    magic_url = f"{PUBLIC_BASE}/portal/{token}"
+    magic_url = f"{_public_base()}/portal/{token}"
     if body.sendEmail:
         ok = _send_ses_email(
             d.client_email,
@@ -183,7 +261,12 @@ def mint_link(
         )
         if not ok:
             logger.info("Magic link (email may be skipped): %s", magic_url)
-    return {"magicLinkUrl": magic_url, "url": magic_url, "token": token, "expiresAt": exp_dt.isoformat() + "Z"}
+    return {
+        "magicLinkUrl": magic_url,
+        "url": magic_url,
+        "token": token,
+        "expiresAt": exp_dt.isoformat() + "Z",
+    }
 
 
 @router.delete("/deliverables/{deliverable_id}")
@@ -199,7 +282,7 @@ def delete_deliverable(
     db.query(PortalAction).filter(PortalAction.deliverable_id == deliverable_id).delete()
     db.delete(d)
     db.commit()
-    root = Path(d.bundle_root or (BUNDLE_ROOT / deliverable_id))
+    root = Path(d.bundle_root or (_bundle_root() / deliverable_id))
     if root.exists():
         shutil.rmtree(root, ignore_errors=True)
     return {"ok": True}
@@ -232,6 +315,7 @@ def list_events(
                 "deliverableId": r.deliverable_id,
                 "action": r.action,
                 "payload": payload,
+                "message": payload.get("message", ""),
                 "createdAt": r.created_at.isoformat() if r.created_at else None,
             }
         )
@@ -240,25 +324,30 @@ def list_events(
 
 @router.get("/session")
 def session_by_token(token: str):
-    try:
-        claims = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
-    except jwt.PyJWTError as e:
-        raise HTTPException(status_code=401, detail=f"invalid token: {e}") from e
-    did = claims.get("sub")
-    jti = claims.get("jti")
-    if not did or not jti:
-        raise HTTPException(status_code=401, detail="invalid claims")
-
     db = get_session_factory()()
     try:
-        d = db.query(PortalDeliverable).filter(PortalDeliverable.id == did).first()
-        if not d:
-            raise HTTPException(status_code=404, detail="deliverable gone")
-        ml = db.query(PortalMagicLink).filter(PortalMagicLink.jti == jti).first()
-        if not ml or ml.deliverable_id != did:
-            raise HTTPException(status_code=401, detail="unknown link")
-        if ml.expires_at and ml.expires_at < datetime.utcnow():
-            raise HTTPException(status_code=401, detail="expired")
+        d, ml, _ = _validate_portal_token(token, db)
+        prior_rows = (
+            db.query(PortalAction)
+            .filter(PortalAction.deliverable_id == d.id, PortalAction.action != "view")
+            .order_by(PortalAction.created_at.desc(), PortalAction.id.desc())
+            .limit(20)
+            .all()
+        )
+        actions = []
+        for row in prior_rows:
+            try:
+                payload = json.loads(row.payload_json or "{}")
+            except json.JSONDecodeError:
+                payload = {}
+            actions.append(
+                {
+                    "id": row.id,
+                    "action": row.action,
+                    "message": payload.get("message", ""),
+                    "createdAt": row.created_at.isoformat() + "Z" if row.created_at else None,
+                }
+            )
         return {
             "deliverable": {
                 "id": d.id,
@@ -267,8 +356,12 @@ def session_by_token(token: str):
                 "kind": d.kind,
                 "entrypoint": d.entrypoint,
                 "opportunityId": d.opportunity_id,
+                "createdAt": d.created_at.isoformat() + "Z" if d.created_at else None,
+                "expiresAt": d.expires_at.isoformat() + "Z" if d.expires_at else None,
             },
             "usesRemaining": ml.uses_remaining,
+            "expiresAt": ml.expires_at.isoformat() + "Z" if ml.expires_at else None,
+            "actions": actions,
         }
     finally:
         db.close()
@@ -276,22 +369,9 @@ def session_by_token(token: str):
 
 @router.post("/actions")
 def post_action(body: ActionBody):
-    try:
-        claims = jwt.decode(body.token, JWT_SECRET, algorithms=["HS256"])
-    except jwt.PyJWTError as e:
-        raise HTTPException(status_code=401, detail=f"invalid token: {e}") from e
-    did = claims.get("sub")
-    jti = claims.get("jti")
-    if not did or not jti:
-        raise HTTPException(status_code=401, detail="invalid claims")
-
     db = get_session_factory()()
     try:
-        ml = db.query(PortalMagicLink).filter(PortalMagicLink.jti == jti).first()
-        if not ml or ml.deliverable_id != did:
-            raise HTTPException(status_code=401, detail="unknown link")
-        if ml.expires_at and ml.expires_at < datetime.utcnow():
-            raise HTTPException(status_code=401, detail="expired")
+        d, ml, _ = _validate_portal_token(body.token, db)
         act = (body.action or "").strip().lower()
         if act not in ("approve", "request_changes", "reject", "view"):
             raise HTTPException(status_code=400, detail="invalid action")
@@ -301,13 +381,24 @@ def post_action(body: ActionBody):
             ml.uses_remaining -= 1
             db.add(ml)
         pa = PortalAction(
-            deliverable_id=did,
+            deliverable_id=d.id,
             action=act,
             payload_json=json.dumps({"message": body.message or ""}),
         )
         db.add(pa)
         db.commit()
-        return {"ok": True, "actionId": pa.id}
+        db.refresh(pa)
+        return {
+            "ok": True,
+            "actionId": pa.id,
+            "usesRemaining": ml.uses_remaining,
+            "action": {
+                "id": pa.id,
+                "action": pa.action,
+                "message": body.message or "",
+                "createdAt": pa.created_at.isoformat() + "Z" if pa.created_at else None,
+            },
+        }
     finally:
         db.close()
 
@@ -316,24 +407,48 @@ def post_action(body: ActionBody):
 def serve_static_file(deliverable_id: str, file_path: str, token: str = ""):
     if not token:
         raise HTTPException(status_code=401, detail="token required")
-    try:
-        claims = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
-    except jwt.PyJWTError:
-        raise HTTPException(status_code=401, detail="invalid token")
-    if claims.get("sub") != deliverable_id:
-        raise HTTPException(status_code=403, detail="mismatch")
-
     db = get_session_factory()()
     try:
-        d = db.query(PortalDeliverable).filter(PortalDeliverable.id == deliverable_id).first()
-        if not d:
-            raise HTTPException(status_code=404)
-        root = Path(d.bundle_root or (BUNDLE_ROOT / deliverable_id))
+        d, _, _ = _validate_portal_token(token, db)
+        if d.id != deliverable_id:
+            raise HTTPException(status_code=403, detail="mismatch")
+        root = Path(d.bundle_root or (_bundle_root() / deliverable_id)).resolve()
         target = (root / file_path).resolve()
-        if not str(target).startswith(str(root.resolve())):
+        if not target.is_relative_to(root):
             raise HTTPException(status_code=400, detail="invalid path")
         if not target.is_file():
             raise HTTPException(status_code=404, detail="not found")
         return FileResponse(target)
+    finally:
+        db.close()
+
+
+@router.get("/download/{deliverable_id}")
+def download_bundle(deliverable_id: str, token: str = ""):
+    """Download the deliverable bundle as a ZIP archive using a valid magic-link token."""
+    if not token:
+        raise HTTPException(status_code=401, detail="token required")
+    db = get_session_factory()()
+    try:
+        d, _, _ = _validate_portal_token(token, db)
+        if d.id != deliverable_id:
+            raise HTTPException(status_code=403, detail="mismatch")
+        root = Path(d.bundle_root or (_bundle_root() / deliverable_id)).resolve()
+        if not root.exists():
+            raise HTTPException(status_code=404, detail="bundle not found")
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+            for item in sorted(root.rglob("*")):
+                if item.is_file() and item.resolve().is_relative_to(root):
+                    zf.write(item, arcname=str(item.relative_to(root)))
+        safe_title = "".join(
+            ch if ch.isalnum() or ch in ("-", "_") else "-"
+            for ch in (d.title or "deliverable").lower()
+        ).strip("-")[:48] or "deliverable"
+        return Response(
+            content=buf.getvalue(),
+            media_type="application/zip",
+            headers={"Content-Disposition": f'attachment; filename="{safe_title}-bundle.zip"'},
+        )
     finally:
         db.close()
