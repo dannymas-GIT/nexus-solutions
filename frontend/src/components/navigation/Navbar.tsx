@@ -26,70 +26,53 @@ const NAVIGATION_ITEMS: NavItem[] = [
     matchPrefixes: ['/dashboard'],
   },
   {
-    label: 'Idea Studio',
-    path: '/idea-studio',
-    matchPrefixes: ['/idea-studio', '/create-business-plan', '/my-plans', '/plan-templates'],
+    label: 'Data & KPIs',
+    path: '/integrations',
+    matchPrefixes: ['/integrations', '/analysis-engine'],
     submenu: [
       {
-        label: 'Submit Brief',
-        path: '/idea-studio/submit',
-        description: 'Submit a new concept for M1/M2 validation',
+        label: 'Data Sources & CSV Upload',
+        path: '/integrations',
+        description: 'Upload CSV exports, profile numeric columns, and track sources',
       },
       {
-        label: 'Milestone & Approval Inbox',
-        path: '/idea-studio/inbox',
-        description: 'Review M1/M2 reports and sequential approval gates',
+        label: 'Corporate KPI Engine',
+        path: '/analysis-engine/set-kpis',
+        description: 'Define corporate KPIs and bind metrics to CSV columns',
+      },
+    ],
+  },
+  {
+    label: 'Reports & Studio',
+    path: '/reports',
+    matchPrefixes: ['/reports', '/idea-studio', '/create-business-plan', '/my-plans', '/docs'],
+    submenu: [
+      {
+        label: 'Executive Report Studio',
+        path: '/reports',
+        description: 'Build KPI reports, export PDF/DOCX/PPTX, and publish to Portal',
       },
       {
-        label: 'App Workspace & Staging',
-        path: '/idea-studio/workspace',
-        description: 'Graduated apps, sprints, and *.nexus-solutions.us staging',
+        label: 'Idea Studio',
+        path: '/idea-studio',
+        description: 'M1/M2 validation, approval gates, and *.nexus-solutions.us staging',
       },
       {
         label: 'Strategic Plan Wizard',
         path: '/create-business-plan',
-        description: '5-step plan builder with DOCX, PPTX, and PDF export',
+        description: '5-step strategic plan builder with document export',
       },
-    ],
-  },
-  {
-    label: 'Data & KPIs',
-    path: '/analysis-engine/set-kpis',
-    matchPrefixes: ['/analysis-engine', '/integrations'],
-    submenu: [
-      {
-        label: 'Set KPIs',
-        path: '/analysis-engine/set-kpis',
-        description: 'Define and track operational KPIs',
-      },
-      {
-        label: 'Data Sources & Integrations',
-        path: '/integrations',
-        description: 'Manage CRM, finance, and ops connectors',
-      },
-    ],
-  },
-  {
-    label: 'Documents',
-    path: '/docs',
-    matchPrefixes: ['/docs'],
-    submenu: [
       {
         label: 'Document Library',
         path: '/docs',
-        description: 'Browse collateral, reports, and templates',
-      },
-      {
-        label: 'Marketing Materials',
-        path: '/docs/marketing',
-        description: 'Value propositions and datasheets',
-      },
-      {
-        label: 'Presentations',
-        path: '/docs/presentations',
-        description: 'Decks and sales scripts',
+        description: 'Browse workspace collateral and presentations',
       },
     ],
+  },
+  {
+    label: 'Client Portal',
+    path: '/portal-manager',
+    matchPrefixes: ['/portal-manager'],
   },
   {
     label: 'Administration',
@@ -166,18 +149,11 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenMobileSidebar }) => {
             <span>Nexus</span>
           </Link>
 
-          <nav
-            aria-label="Workspace navigation"
-            className="hidden md:flex items-center gap-1"
-          >
+          <nav aria-label="Workspace navigation" className="hidden md:flex items-center gap-1">
             {NAVIGATION_ITEMS.map((item) => {
               const active = isSectionActive(item);
               return (
-                <div
-                  key={item.label}
-                  className="relative"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <div key={item.label} className="relative" onClick={(e) => e.stopPropagation()}>
                   {item.submenu ? (
                     <>
                       <button
@@ -186,7 +162,7 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenMobileSidebar }) => {
                         onClick={() => toggleDropdown(item.label)}
                         className={`inline-flex items-center gap-1.5 px-3.5 py-2.5 min-h-[44px] rounded-lg text-base font-medium transition-colors ${
                           active || openDropdown === item.label
-                            ? 'bg-blue-50 text-blue-700'
+                            ? 'bg-blue-50 text-blue-800'
                             : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                         }`}
                       >
@@ -200,7 +176,7 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenMobileSidebar }) => {
                       </button>
 
                       {openDropdown === item.label && (
-                        <div className="absolute left-0 top-full mt-1.5 w-72 bg-white rounded-xl shadow-lg border border-slate-200 py-1.5 z-50">
+                        <div className="absolute left-0 top-full mt-1.5 w-80 bg-white rounded-xl shadow-lg border border-slate-200 py-1.5 z-50">
                           {item.submenu.map((subItem) => (
                             <Link
                               key={subItem.path}
@@ -224,7 +200,7 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenMobileSidebar }) => {
                       to={item.path}
                       className={`inline-flex items-center px-3.5 py-2.5 min-h-[44px] rounded-lg text-base font-medium transition-colors ${
                         active
-                          ? 'bg-blue-50 text-blue-700'
+                          ? 'bg-blue-50 text-blue-800'
                           : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                       }`}
                     >
@@ -241,7 +217,7 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenMobileSidebar }) => {
         <div className="flex items-center gap-2 shrink-0">
           <Link
             to="/request-audit"
-            className="hidden xl:inline-flex items-center px-4 py-2 min-h-[44px] rounded-lg border border-blue-200 bg-blue-50 text-blue-800 hover:bg-blue-100 text-base font-medium transition-colors"
+            className="hidden xl:inline-flex items-center px-4 py-2 min-h-[44px] rounded-lg border border-blue-200 bg-blue-50 text-blue-900 hover:bg-blue-100 text-base font-medium transition-colors"
           >
             Request Audit
           </Link>

@@ -14,6 +14,8 @@ import ServicesPage from './pages/ServicesPage';
 import PackagesPage from './pages/PackagesPage';
 import IdeaStudioPage from './pages/IdeaStudioPage';
 import RequestAuditPage from './pages/RequestAuditPage';
+import ReportsPage from './pages/ReportsPage';
+import PortalManagerPage from './pages/PortalManagerPage';
 
 /**
  * Main application component with routing configuration.
@@ -37,6 +39,46 @@ function App() {
           element={
             <Layout>
               <Dashboard />
+            </Layout>
+          }
+        />
+
+        {/* Data Sources & CSV Ingestion */}
+        <Route
+          path="/integrations"
+          element={
+            <Layout>
+              <IntegrationsPage />
+            </Layout>
+          }
+        />
+
+        {/* Corporate KPI Engine */}
+        <Route
+          path="/analysis-engine/set-kpis"
+          element={
+            <Layout>
+              <SetKpisPage />
+            </Layout>
+          }
+        />
+
+        {/* Executive Report Studio */}
+        <Route
+          path="/reports"
+          element={
+            <Layout>
+              <ReportsPage />
+            </Layout>
+          }
+        />
+
+        {/* Internal Client Portal Console */}
+        <Route
+          path="/portal-manager"
+          element={
+            <Layout>
+              <PortalManagerPage />
             </Layout>
           }
         />
@@ -67,7 +109,7 @@ function App() {
           }
         />
 
-        {/* Business Plan routes — unified with Idea Studio */}
+        {/* Strategic Plan routes */}
         <Route
           path="/create-business-plan"
           element={
@@ -80,7 +122,7 @@ function App() {
           path="/my-plans"
           element={
             <Layout>
-              <IdeaStudioPage defaultTab="inbox" />
+              <ReportsPage />
             </Layout>
           }
         />
@@ -89,6 +131,24 @@ function App() {
           element={
             <Layout>
               <BusinessPlanWizard />
+            </Layout>
+          }
+        />
+
+        {/* Idea Studio routes */}
+        <Route
+          path="/idea-studio"
+          element={
+            <Layout>
+              <IdeaStudioPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/idea-studio/:tab"
+          element={
+            <Layout>
+              <IdeaStudioPage />
             </Layout>
           }
         />
@@ -109,44 +169,6 @@ function App() {
           element={
             <Layout>
               <TutorialsPage />
-            </Layout>
-          }
-        />
-
-        {/* Integrations */}
-        <Route
-          path="/integrations"
-          element={
-            <Layout>
-              <IntegrationsPage />
-            </Layout>
-          }
-        />
-
-        {/* Analysis Engine routes */}
-        <Route
-          path="/analysis-engine/set-kpis"
-          element={
-            <Layout>
-              <SetKpisPage />
-            </Layout>
-          }
-        />
-
-        {/* Idea Studio routes */}
-        <Route
-          path="/idea-studio"
-          element={
-            <Layout>
-              <IdeaStudioPage />
-            </Layout>
-          }
-        />
-        <Route
-          path="/idea-studio/:tab"
-          element={
-            <Layout>
-              <IdeaStudioPage />
             </Layout>
           }
         />

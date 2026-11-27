@@ -1,527 +1,421 @@
-import React, { useState } from 'react';
-import { Search, Filter, Plus, ExternalLink, Check, X, AlertCircle, Grid, Settings, RefreshCw } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  Upload,
+  Database,
+  Trash2,
+  CheckCircle2,
+  AlertCircle,
+  Table2,
+  ArrowRight,
+  Plus,
+} from 'lucide-react';
+import { convergenceApi, type DataSourceRecord } from '@/services/convergenceApi';
 
-interface Integration {
-  id: string;
-  name: string;
-  description: string;
-  category: 'Analytics' | 'CRM' | 'Financial' | 'Marketing' | 'Productivity' | 'Other';
-  logoUrl: string;
-  isConnected: boolean;
-  isPopular: boolean;
-  isNew: boolean;
-}
+const STARTER_CONNECTORS = [
+  {
+    type: 'google_sheets',
+    name: 'Google Sheets',
+    category: 'Operations',
+    description: 'Export operational trackers as CSV and upload snapshots directly into Nexus KPIs.',
+  },
+  {
+    type: 'quickbooks',
+    name: 'QuickBooks Online',
+    category: 'Financial',
+    description: 'Converge P&L, accounts receivable (DSO), and revenue CSV exports.',
+  },
+  {
+    type: 'hubspot',
+    name: 'HubSpot CRM',
+    category: 'CRM',
+    description: 'Track deal pipeline, win rates, and closed-won revenue from CRM exports.',
+  },
+  {
+    type: 'stripe',
+    name: 'Stripe Billing',
+    category: 'Financial',
+    description: 'Ingest recurring subscription, MRR, and retention summaries.',
+  },
+];
 
 const IntegrationsPage: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeCategory, /* setActiveCategory */] = useState<string>('all');
-  const [showConnected, setShowConnected] = useState(false);
-  const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
+  const [sources, setSources] = useState<DataSourceRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
-  // Sample integrations data
-  const integrations: Integration[] = [
-    {
-      id: '1',
-      name: 'Google Analytics',
-      description: 'Connect your Google Analytics account to track website traffic and user behavior.',
-      category: 'Analytics',
-      logoUrl: 'https://via.placeholder.com/80x80/4285F4/FFFFFF?text=GA',
-      isConnected: true,
-      isPopular: true,
-      isNew: false,
-    },
-    {
-      id: '2',
-      name: 'Salesforce',
-      description: 'Integrate with Salesforce CRM to sync customers, leads, and opportunities.',
-      category: 'CRM',
-      logoUrl: 'https://via.placeholder.com/80x80/00A1E0/FFFFFF?text=SF',
-      isConnected: false,
-      isPopular: true,
-      isNew: false,
-    },
-    {
-      id: '3',
-      name: 'QuickBooks',
-      description: 'Connect with QuickBooks to manage your financial data and reporting.',
-      category: 'Financial',
-      logoUrl: 'https://via.placeholder.com/80x80/2CA01C/FFFFFF?text=QB',
-      isConnected: true,
-      isPopular: true,
-      isNew: false,
-    },
-    {
-      id: '4',
-      name: 'Mailchimp',
-      description: 'Integrate with Mailchimp to sync contact lists and manage email campaigns.',
-      category: 'Marketing',
-      logoUrl: 'https://via.placeholder.com/80x80/FFE01B/000000?text=MC',
-      isConnected: false,
-      isPopular: false,
-      isNew: false,
-    },
-    {
-      id: '5',
-      name: 'Slack',
-      description: 'Get notifications and updates directly in your Slack channels.',
-      category: 'Productivity',
-      logoUrl: 'https://via.placeholder.com/80x80/4A154B/FFFFFF?text=SL',
-      isConnected: false,
-      isPopular: true,
-      isNew: false,
-    },
-    {
-      id: '6',
-      name: 'Xero',
-      description: 'Connect with Xero for accounting, invoicing, and financial reporting.',
-      category: 'Financial',
-      logoUrl: 'https://via.placeholder.com/80x80/13B5EA/FFFFFF?text=XE',
-      isConnected: false,
-      isPopular: false,
-      isNew: false,
-    },
-    {
-      id: '7',
-      name: 'HubSpot',
-      description: 'Integrate with HubSpot for marketing, sales, and customer service.',
-      category: 'CRM',
-      logoUrl: 'https://via.placeholder.com/80x80/FF7A59/FFFFFF?text=HS',
-      isConnected: false,
-      isPopular: true,
-      isNew: false,
-    },
-    {
-      id: '8',
-      name: 'Shopify',
-      description: 'Connect your Shopify store to sync products, orders, and customers.',
-      category: 'Financial',
-      logoUrl: 'https://via.placeholder.com/80x80/96BF48/FFFFFF?text=SH',
-      isConnected: false,
-      isPopular: false,
-      isNew: true,
-    },
-    {
-      id: '9',
-      name: 'Microsoft Teams',
-      description: 'Collaborate and share updates with your team directly from Nexus.',
-      category: 'Productivity',
-      logoUrl: 'https://via.placeholder.com/80x80/6264A7/FFFFFF?text=MT',
-      isConnected: false,
-      isPopular: false,
-      isNew: true,
-    },
-    {
-      id: '10',
-      name: 'Google Workspace',
-      description: 'Connect with Google Workspace for document management and collaboration.',
-      category: 'Productivity',
-      logoUrl: 'https://via.placeholder.com/80x80/4285F4/FFFFFF?text=GW',
-      isConnected: false,
-      isPopular: true,
-      isNew: false,
-    },
-    {
-      id: '11',
-      name: 'Stripe',
-      description: 'Integrate with Stripe for payment processing and subscription management.',
-      category: 'Financial',
-      logoUrl: 'https://via.placeholder.com/80x80/635BFF/FFFFFF?text=ST',
-      isConnected: false,
-      isPopular: true,
-      isNew: false,
-    },
-    {
-      id: '12',
-      name: 'Airtable',
-      description: 'Sync your Airtable databases with Nexus for enhanced data management.',
-      category: 'Productivity',
-      logoUrl: 'https://via.placeholder.com/80x80/FFAE00/FFFFFF?text=AT',
-      isConnected: false,
-      isPopular: false,
-      isNew: true,
-    },
-  ];
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [datasetName, setDatasetName] = useState('');
+  const [datasetCategory, setDatasetCategory] = useState('Financial');
+  const [uploading, setUploading] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // Filter integrations based on search, category, and connection status
-  const filteredIntegrations = integrations.filter(integration => {
-    const matchesSearch = integration.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          integration.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = activeCategory === 'all' || integration.category === activeCategory;
-    const matchesConnection = !showConnected || integration.isConnected;
-    
-    return matchesSearch && matchesCategory && matchesConnection;
-  });
+  const loadSources = useCallback(async () => {
+    setLoading(true);
+    try {
+      const list = await convergenceApi.listSources();
+      setSources(list);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to load data sources.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const popularIntegrations = integrations.filter(integration => integration.isPopular);
-  const newIntegrations = integrations.filter(integration => integration.isNew);
-  const connectedIntegrations = integrations.filter(integration => integration.isConnected);
+  useEffect(() => {
+    loadSources();
+  }, [loadSources]);
 
-  // Toggle connection status (in a real app, this would call an API)
-  const toggleConnection = (/* integration: Integration */) => {
-    // This is just for demo purposes - in a real app you would make an API call
-    // const updatedIntegrations = integrations.map(item => { // Unused variable
-    //   if (item.id === integration.id) {
-    //     return { ...item, isConnected: !item.isConnected };
-    //   }
-    //   return item;
-    // });
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedFile) {
+      setError('Choose a CSV file first.');
+      return;
+    }
+    setUploading(true);
+    setError(null);
+    setStatusMessage(null);
+    try {
+      const created = await convergenceApi.uploadCsv(
+        selectedFile,
+        datasetName.trim() || selectedFile.name.replace(/\.csv$/i, ''),
+        datasetCategory
+      );
+      setStatusMessage(
+        `Ingested "${created.name}" (${created.rowCount} rows, ${created.columns.length} columns profiled). You can now bind KPIs to its numeric columns.`
+      );
+      setSelectedFile(null);
+      setDatasetName('');
+      setExpandedId(created.id);
+      await loadSources();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'CSV upload failed.');
+    } finally {
+      setUploading(false);
+    }
+  };
 
-    // For now, just close the modal
-    setSelectedIntegration(null);
+  const handleRegisterStarter = async (connector: (typeof STARTER_CONNECTORS)[number]) => {
+    setError(null);
+    setStatusMessage(null);
+    try {
+      await convergenceApi.registerConnector({
+        name: connector.name,
+        sourceType: connector.type,
+        category: connector.category,
+        notes: connector.description,
+      });
+      setStatusMessage(`Registered ${connector.name} in your workspace source inventory.`);
+      await loadSources();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to register connector.');
+    }
+  };
+
+  const handleDelete = async (source: DataSourceRecord) => {
+    setError(null);
+    try {
+      await convergenceApi.deleteSource(source.id);
+      setStatusMessage(`Removed "${source.name}".`);
+      await loadSources();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to remove source.');
+    }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Integrations</h1>
-        <p className="text-gray-600 mt-2">
-          Connect Nexus with your favorite services and tools
-        </p>
+    <div className="max-w-6xl mx-auto space-y-8">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Data Sources &amp; CSV Ingestion</h1>
+          <p className="text-lg text-slate-600 mt-1">
+            Upload operational or financial CSV datasets to profile numeric columns and feed live
+            corporate KPIs.
+          </p>
+        </div>
+        <Link
+          to="/analysis-engine/set-kpis"
+          className="inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-base font-semibold"
+        >
+          Map Columns to KPIs
+          <ArrowRight className="w-4 h-4" />
+        </Link>
       </div>
 
-      {selectedIntegration ? (
-        // Integration detail view
-        <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-          <div className="p-6">
-            <div className="flex justify-between items-start">
-              <div className="flex items-center">
-                <img 
-                  src={selectedIntegration.logoUrl} 
-                  alt={selectedIntegration.name} 
-                  className="w-16 h-16 rounded-lg mr-4"
-                />
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">{selectedIntegration.name}</h2>
-                  <div className="flex items-center text-sm mt-1">
-                    <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs mr-2">
-                      {selectedIntegration.category}
-                    </span>
-                    {selectedIntegration.isConnected && (
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs flex items-center">
-                        <Check className="w-3 h-3 mr-1" />
-                        Connected
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <button 
-                className="text-gray-500 hover:text-gray-700"
-                onClick={() => setSelectedIntegration(null)}
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
+      {error && (
+        <div
+          role="alert"
+          className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-900 text-base flex items-center gap-2.5"
+        >
+          <AlertCircle className="w-5 h-5 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
 
-            <p className="text-gray-600 mt-4">
-              {selectedIntegration.description}
+      {statusMessage && (
+        <div
+          role="status"
+          className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-base flex items-center gap-2.5"
+        >
+          <CheckCircle2 className="w-5 h-5 shrink-0" />
+          <span>{statusMessage}</span>
+        </div>
+      )}
+
+      {/* CSV Upload Form */}
+      <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2.5 rounded-xl bg-blue-100 text-blue-800">
+            <Upload className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Upload CSV Dataset</h2>
+            <p className="text-base text-slate-600">
+              Supports standard CSV exports from QuickBooks, HubSpot, Salesforce, Excel, or Google
+              Sheets (up to 5 MB). Currency symbols ($) and percentages (%) are parsed automatically.
             </p>
-
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <h3 className="text-lg font-semibold mb-4">Connection Details</h3>
-              
-              {selectedIntegration.isConnected ? (
-                <div className="bg-green-50 border border-green-100 rounded-lg p-4 mb-6">
-                  <div className="flex items-start">
-                    <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5" />
-                    <div>
-                      <h4 className="font-medium text-green-800">Connected</h4>
-                      <p className="text-sm text-green-700 mt-1">
-                        This integration is active and data is syncing properly.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
-                  <div className="flex items-start">
-                    <AlertCircle className="w-5 h-5 text-blue-500 mr-3 mt-0.5" />
-                    <div>
-                      <h4 className="font-medium text-blue-800">Not Connected</h4>
-                      <p className="text-sm text-blue-700 mt-1">
-                        Connect your account to start syncing data with Nexus.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="mb-6">
-                <h4 className="font-medium text-gray-900 mb-2">Data Permissions</h4>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-center">
-                    <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Read access to your account information
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Ability to import data into Nexus
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="w-4 h-4 text-green-500 mr-2" />
-                    Automatic synchronization of updates
-                  </li>
-                </ul>
-              </div>
-
-              <div className="flex justify-end mt-8">
-                {selectedIntegration.isConnected ? (
-                  <>
-                    <button 
-                      className="flex items-center mr-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg"
-                      onClick={() => {/* Configuration logic */}}
-                    >
-                      <Settings className="w-4 h-4 mr-2" />
-                      Configure
-                    </button>
-                    <button 
-                      className="flex items-center mr-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg"
-                      onClick={() => {/* Sync logic */}}
-                    >
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Sync Now
-                    </button>
-                    <button 
-                      className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg"
-                      onClick={() => toggleConnection(/* selectedIntegration */)}
-                    >
-                      Disconnect
-                    </button>
-                  </>
-                ) : (
-                  <button 
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
-                    onClick={() => toggleConnection(/* selectedIntegration */)}
-                  >
-                    Connect
-                  </button>
-                )}
-              </div>
-            </div>
           </div>
         </div>
-      ) : (
-        // Integrations listing view
-        <>
-          {/* Connected integrations */}
-          {connectedIntegrations.length > 0 && (
-            <div className="mb-12">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Your Connected Services</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {connectedIntegrations.map(integration => (
-                  <div 
-                    key={integration.id}
-                    className="bg-white rounded-lg shadow-sm border border-green-100 p-4 hover:shadow-md transition-shadow cursor-pointer flex items-center"
-                    onClick={() => setSelectedIntegration(integration)}
-                  >
-                    <img 
-                      src={integration.logoUrl} 
-                      alt={integration.name} 
-                      className="w-12 h-12 rounded mr-4"
-                    />
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{integration.name}</h3>
-                      <div className="flex items-center mt-1">
-                        <span className="text-xs text-gray-500 mr-2">{integration.category}</span>
-                        <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs flex items-center">
-                          <Check className="w-3 h-3 mr-1" />
-                          Connected
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
-          {/* Search and filters */}
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="relative flex-grow">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search integrations..."
-                className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            
-            <div className="flex gap-4">
-              <div className="relative inline-block">
-                <button
-                  className="flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50"
-                  onClick={() => {/* Dropdown logic */}}
-                >
-                  <Filter className="w-5 h-5 mr-2" />
-                  <span>Category</span>
-                </button>
-              </div>
-              
-              <div className="relative inline-block">
-                <button
-                  className={`flex items-center px-4 py-2 border rounded-lg ${
-                    showConnected 
-                      ? 'bg-blue-50 border-blue-200 text-blue-600' 
-                      : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setShowConnected(!showConnected)}
-                >
-                  {showConnected ? (
-                    <Check className="w-5 h-5 mr-2" />
-                  ) : (
-                    <Filter className="w-5 h-5 mr-2" />
-                  )}
-                  <span>Connected Only</span>
-                </button>
-              </div>
-            </div>
+        <form onSubmit={handleUpload} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end mt-5">
+          <div className="md:col-span-4">
+            <label htmlFor="csv-file" className="block text-base font-medium text-slate-800 mb-1.5">
+              CSV File *
+            </label>
+            <input
+              id="csv-file"
+              type="file"
+              accept=".csv,text/csv"
+              onChange={(e) => {
+                const f = e.target.files?.[0] || null;
+                setSelectedFile(f);
+                if (f && !datasetName) {
+                  setDatasetName(f.name.replace(/\.csv$/i, ''));
+                }
+              }}
+              className="block w-full min-h-[44px] text-base text-slate-800 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-slate-900 file:text-white file:font-medium hover:file:bg-slate-800 border border-slate-300 rounded-lg p-1.5"
+            />
           </div>
 
-          {/* Popular integrations */}
-          {popularIntegrations.length > 0 && !showConnected && (
-            <div className="mb-12">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Popular Integrations</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {popularIntegrations.map(integration => (
-                  <div 
-                    key={integration.id}
-                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center"
-                    onClick={() => setSelectedIntegration(integration)}
-                  >
-                    <img 
-                      src={integration.logoUrl} 
-                      alt={integration.name} 
-                      className="w-16 h-16 rounded-lg mb-3"
-                    />
-                    <h3 className="font-semibold text-gray-900">{integration.name}</h3>
-                    <span className="text-xs text-gray-500 mt-1">{integration.category}</span>
-                    {integration.isConnected && (
-                      <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs flex items-center mt-2">
-                        <Check className="w-3 h-3 mr-1" />
-                        Connected
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* New integrations */}
-          {newIntegrations.length > 0 && !showConnected && (
-            <div className="mb-12">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">New Integrations</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {newIntegrations.map(integration => (
-                  <div 
-                    key={integration.id}
-                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer relative flex flex-col items-center text-center"
-                    onClick={() => setSelectedIntegration(integration)}
-                  >
-                    <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded">
-                      New
-                    </div>
-                    <img 
-                      src={integration.logoUrl} 
-                      alt={integration.name} 
-                      className="w-16 h-16 rounded-lg mb-3"
-                    />
-                    <h3 className="font-semibold text-gray-900">{integration.name}</h3>
-                    <span className="text-xs text-gray-500 mt-1">{integration.category}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* All integrations */}
-          <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-              All Integrations
-              {activeCategory !== 'all' && ` - ${activeCategory}`}
-              {showConnected && ' (Connected)'}
-            </h2>
-            
-            {filteredIntegrations.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {filteredIntegrations.map(integration => (
-                  <div 
-                    key={integration.id}
-                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => setSelectedIntegration(integration)}
-                  >
-                    <div className="flex items-center mb-3">
-                      <img 
-                        src={integration.logoUrl} 
-                        alt={integration.name} 
-                        className="w-12 h-12 rounded mr-3"
-                      />
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{integration.name}</h3>
-                        <div className="flex items-center mt-1">
-                          <span className="text-xs text-gray-500 mr-2">{integration.category}</span>
-                          {integration.isConnected && (
-                            <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs flex items-center">
-                              <Check className="w-3 h-3 mr-1" />
-                              Connected
-                            </span>
-                          )}
-                          {integration.isNew && (
-                            <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs flex items-center ml-1">
-                              New
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-600 line-clamp-2">{integration.description}</p>
-                    <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
-                      <a href="#" className="text-sm text-blue-600 hover:text-blue-800 flex items-center">
-                        Learn more
-                        <ExternalLink className="w-3 h-3 ml-1" />
-                      </a>
-                      {integration.isConnected ? (
-                        <span className="text-xs text-green-600 flex items-center">
-                          <Check className="w-4 h-4 mr-1" />
-                          Connected
-                        </span>
-                      ) : (
-                        <button className="text-sm flex items-center text-blue-600 hover:text-blue-800">
-                          <Plus className="w-4 h-4 mr-1" />
-                          Connect
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12 bg-gray-50 rounded-lg">
-                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Grid className="w-8 h-8 text-gray-400" />
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-1">No integrations found</h3>
-                <p className="text-gray-500">
-                  Try adjusting your search or filter criteria
-                </p>
-              </div>
-            )}
+          <div className="md:col-span-4">
+            <label htmlFor="csv-name" className="block text-base font-medium text-slate-800 mb-1.5">
+              Dataset Name
+            </label>
+            <input
+              id="csv-name"
+              type="text"
+              value={datasetName}
+              onChange={(e) => setDatasetName(e.target.value)}
+              placeholder="e.g., Q4 Finance & MRR Export"
+              className="w-full min-h-[44px] px-3.5 py-2 rounded-lg border border-slate-300 text-base text-slate-900"
+            />
           </div>
-          
-          {/* Request integration */}
-          <div className="mt-12 bg-blue-50 border border-blue-100 rounded-lg p-6 text-center">
-            <h3 className="text-lg font-semibold text-blue-900 mb-2">Don't see what you're looking for?</h3>
-            <p className="text-blue-700 mb-4">Request a new integration and we'll consider adding it to our platform.</p>
-            <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
-              Request Integration
+
+          <div className="md:col-span-2">
+            <label
+              htmlFor="csv-category"
+              className="block text-base font-medium text-slate-800 mb-1.5"
+            >
+              Domain
+            </label>
+            <select
+              id="csv-category"
+              value={datasetCategory}
+              onChange={(e) => setDatasetCategory(e.target.value)}
+              className="w-full min-h-[44px] px-3 py-2 rounded-lg border border-slate-300 text-base text-slate-900 bg-white"
+            >
+              <option value="Financial">Financial</option>
+              <option value="CRM">CRM</option>
+              <option value="Operations">Operations</option>
+              <option value="Marketing">Marketing</option>
+            </select>
+          </div>
+
+          <div className="md:col-span-2">
+            <button
+              type="submit"
+              disabled={uploading || !selectedFile}
+              className="w-full min-h-[44px] px-4 py-2.5 rounded-lg bg-blue-700 hover:bg-blue-800 text-white text-base font-semibold disabled:opacity-50"
+            >
+              {uploading ? 'Ingesting...' : 'Ingest CSV'}
             </button>
           </div>
-        </>
-      )}
+        </form>
+      </section>
+
+      {/* Persisted Sources */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-slate-900">
+            Workspace Data Sources ({sources.length})
+          </h2>
+        </div>
+
+        {loading ? (
+          <div className="p-8 bg-white rounded-2xl border border-slate-200 text-base text-slate-600">
+            Loading persisted data sources...
+          </div>
+        ) : sources.length === 0 ? (
+          <div className="p-10 bg-white rounded-2xl border border-dashed border-slate-300 text-center space-y-2">
+            <Database className="w-10 h-10 text-slate-400 mx-auto" />
+            <h3 className="text-xl font-semibold text-slate-900">No datasets ingested yet</h3>
+            <p className="text-base text-slate-600 max-w-xl mx-auto">
+              Upload a CSV above to automatically profile columns and power your KPI scorecard and
+              executive reports.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {sources.map((src) => {
+              const expanded = expandedId === src.id;
+              const numericCols = src.columns.filter((c) => c.type === 'number');
+              return (
+                <div
+                  key={src.id}
+                  className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-xl font-bold text-slate-900">{src.name}</h3>
+                        <span className="px-2.5 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-900">
+                          {src.status === 'synced' ? 'Synced' : 'Configured'}
+                        </span>
+                        <span className="px-2.5 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-800">
+                          {src.category} · {src.sourceType.toUpperCase()}
+                        </span>
+                      </div>
+                      <p className="text-base text-slate-600">
+                        {src.rowCount > 0
+                          ? `${src.rowCount.toLocaleString()} rows · ${src.columns.length} columns (${numericCols.length} numeric)`
+                          : 'Connector registered — upload a CSV export to populate metrics.'}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {src.sampleRows.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setExpandedId(expanded ? null : src.id)}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-800 text-base font-medium"
+                        >
+                          <Table2 className="w-4 h-4" />
+                          {expanded ? 'Hide Preview' : 'Inspect Columns'}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(src)}
+                        aria-label={`Remove ${src.name}`}
+                        className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] p-2 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-800"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {src.columns.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {src.columns.map((col) => (
+                        <span
+                          key={col.name}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border text-sm font-medium ${
+                            col.type === 'number'
+                              ? 'bg-blue-50 border-blue-200 text-blue-900'
+                              : 'bg-slate-50 border-slate-200 text-slate-700'
+                          }`}
+                        >
+                          <span>{col.name}</span>
+                          {col.stats && (
+                            <span className="text-blue-700 font-normal">
+                              (sum: {col.stats.sum.toLocaleString()}, avg:{' '}
+                              {col.stats.avg.toLocaleString()})
+                            </span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {expanded && src.sampleRows.length > 0 && (
+                    <div className="overflow-x-auto border border-slate-200 rounded-xl">
+                      <table className="min-w-full divide-y divide-slate-200 text-sm">
+                        <thead className="bg-slate-100">
+                          <tr>
+                            {src.columns.map((col) => (
+                              <th
+                                key={col.name}
+                                className="px-4 py-2.5 text-left font-semibold text-slate-900"
+                              >
+                                {col.name}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 bg-white">
+                          {src.sampleRows.slice(0, 8).map((row, idx) => (
+                            <tr key={idx}>
+                              {src.columns.map((col) => (
+                                <td key={col.name} className="px-4 py-2 text-slate-700">
+                                  {row[col.name] || '—'}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* Starter Connector Inventory */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900">Starter System Connectors</h2>
+          <p className="text-base text-slate-600 mt-1">
+            Register the business systems your team exports from so your convergence inventory stays
+            documented in executive reports.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {STARTER_CONNECTORS.map((conn) => (
+            <div
+              key={conn.type}
+              className="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col justify-between gap-4"
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-lg font-bold text-slate-900">{conn.name}</h3>
+                  <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-800 text-sm font-medium">
+                    {conn.category}
+                  </span>
+                </div>
+                <p className="text-base text-slate-600 mt-2">{conn.description}</p>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => handleRegisterStarter(conn)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-900 text-base font-medium"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add to Source Inventory
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 };
 
-export default IntegrationsPage; 
+export default IntegrationsPage;

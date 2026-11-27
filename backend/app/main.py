@@ -1,10 +1,12 @@
 import logging
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .api.routes import convergence, documents, idea_studio, leads, portal, storage
 from .core.config import settings
 
 load_dotenv()
@@ -24,10 +26,19 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    logger.info("Starting Nexus Solutions API...")
+    yield
+    logger.info("Shutting down Nexus Solutions API...")
+
+
 app = FastAPI(
     title="Nexus Solutions API",
-    description="Corporate data convergence, Idea Studio, executive deliverables, and client portal API",
-    version="0.1.1",
+    description="Corporate data convergence, KPI intelligence, executive reports, Idea Studio, and client portal API",
+    version="0.2.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -41,13 +52,13 @@ app.add_middleware(
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "version": "0.1.1"}
+    return {"status": "healthy", "version": "0.2.0"}
 
 
 @app.get("/api/health")
 async def api_health_check():
     """Alias for reverse-proxy health checks expecting /api/health."""
-    return {"status": "healthy", "version": "0.1.1"}
+    return {"status": "healthy", "version": "0.2.0"}
 
 
 @app.get("/")
@@ -59,25 +70,14 @@ async def root():
     }
 
 
-from .api.routes import documents, idea_studio, leads, portal, storage
-
 app.include_router(storage.router, prefix="/api/v1")
 app.include_router(documents.router, prefix="/api/v1")
 app.include_router(leads.router, prefix="/api/v1")
-# Client deliverable review (Income Scout / Greenhouse publish); API key + JWT auth inside router
+app.include_router(convergence.router, prefix="/api/v1")
+# Client deliverable review (Income Scout / Greenhouse / Report Studio publish)
 app.include_router(portal.router, prefix="/api")
 # Shared Idea Studio tenant-scoped proxy (TheHelm control-api; tenant=nexus-solutions)
 app.include_router(idea_studio.router, prefix="/api")
-
-
-@app.on_event("startup")
-async def startup_event():
-    logger.info("Starting Nexus Solutions API...")
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    logger.info("Shutting down Nexus Solutions API...")
 
 
 if __name__ == "__main__":

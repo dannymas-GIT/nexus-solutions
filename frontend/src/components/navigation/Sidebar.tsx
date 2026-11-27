@@ -7,6 +7,7 @@ import {
   Database,
   BarChart3,
   FolderOpen,
+  Send,
   Users,
   Settings,
   ChevronLeft,
@@ -34,27 +35,31 @@ const PRIMARY_ITEMS: NavItem[] = [
     path: '/dashboard',
   },
   {
-    icon: <Lightbulb size={20} />,
-    label: 'Idea Studio',
-    path: '/idea-studio',
-    matchPrefixes: ['/idea-studio', '/my-plans'],
-  },
-  {
-    icon: <FileText size={20} />,
-    label: 'Plan Wizard',
-    path: '/create-business-plan',
-    matchPrefixes: ['/create-business-plan', '/plan-templates'],
-  },
-  {
     icon: <Database size={20} />,
     label: 'Data Sources',
     path: '/integrations',
   },
   {
     icon: <BarChart3 size={20} />,
-    label: 'Set KPIs',
+    label: 'KPI Engine',
     path: '/analysis-engine/set-kpis',
     matchPrefixes: ['/analysis-engine'],
+  },
+  {
+    icon: <FileText size={20} />,
+    label: 'Report Studio',
+    path: '/reports',
+  },
+  {
+    icon: <Send size={20} />,
+    label: 'Client Portal',
+    path: '/portal-manager',
+  },
+  {
+    icon: <Lightbulb size={20} />,
+    label: 'Idea Studio',
+    path: '/idea-studio',
+    matchPrefixes: ['/idea-studio', '/my-plans', '/create-business-plan', '/plan-templates'],
   },
   {
     icon: <FolderOpen size={20} />,

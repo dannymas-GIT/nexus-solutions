@@ -1,10 +1,10 @@
-"""SQLite/Postgres database for client deliverable review and corporate audit leads."""
+"""SQLite/Postgres database for client portal, audit leads, and data convergence workspace."""
 from __future__ import annotations
 
 import os
 from pathlib import Path
 
-from sqlalchemy import Column, DateTime, Integer, String, Text, create_engine, func
+from sqlalchemy import Column, DateTime, Float, Integer, String, Text, create_engine, func
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 Base = declarative_base()
@@ -61,6 +61,57 @@ class AuditLead(Base):
     source_page = Column(String(128), default="/request-audit")
     status = Column(String(32), default="new")
     created_at = Column(DateTime, server_default=func.now())
+
+
+class DataSourceSnapshot(Base):
+    __tablename__ = "data_sources"
+
+    id = Column(String(36), primary_key=True)
+    name = Column(String(256), nullable=False)
+    source_type = Column(String(64), default="csv")
+    category = Column(String(64), default="Operations")
+    status = Column(String(32), default="synced")
+    filename = Column(String(512), default="")
+    row_count = Column(Integer, default=0)
+    columns_json = Column(Text, default="[]")
+    sample_rows_json = Column(Text, default="[]")
+    config_json = Column(Text, default="{}")
+    last_synced_at = Column(DateTime, server_default=func.now())
+    created_at = Column(DateTime, server_default=func.now())
+
+
+class KpiMetric(Base):
+    __tablename__ = "kpi_metrics"
+
+    id = Column(String(36), primary_key=True)
+    name = Column(String(256), nullable=False)
+    category = Column(String(64), default="Revenue")
+    description = Column(Text, default="")
+    unit = Column(String(32), default="USD")
+    direction = Column(String(16), default="higher_is_better")
+    target_value = Column(Float, nullable=False, default=0.0)
+    actual_value = Column(Float, nullable=False, default=0.0)
+    source_id = Column(String(36), index=True, nullable=True)
+    source_column = Column(String(256), nullable=True)
+    aggregation = Column(String(32), default="manual")
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, server_default=func.now())
+
+
+class ExecutiveReport(Base):
+    __tablename__ = "executive_reports"
+
+    id = Column(String(36), primary_key=True)
+    title = Column(String(512), nullable=False)
+    company_name = Column(String(256), default="")
+    period_label = Column(String(128), default="")
+    executive_summary = Column(Text, default="")
+    kpi_ids_json = Column(Text, default="[]")
+    source_ids_json = Column(Text, default="[]")
+    portal_deliverable_id = Column(String(36), nullable=True)
+    portal_magic_link_url = Column(String(1024), nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
 
 _engine = None

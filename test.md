@@ -42,6 +42,33 @@ These run on every pipeline. Keep fast (< 30 seconds total).
 
 Add tests for new features here.
 
+### Test: Data Sources & CSV Upload Loads
+**URL:** ${BASE_URL}/integrations
+**Steps:**
+1. Wait for page load
+**Expected:**
+- Page loads within 5 seconds
+- See "Data Sources & CSV Ingestion"
+- See "Upload CSV Dataset"
+
+### Test: Corporate KPI Engine Loads
+**URL:** ${BASE_URL}/analysis-engine/set-kpis
+**Steps:**
+1. Wait for page load
+**Expected:**
+- Page loads within 5 seconds
+- See "Corporate KPI Engine"
+- See "Corporate Operational KPI Templates"
+
+### Test: Executive Report Studio Loads
+**URL:** ${BASE_URL}/reports
+**Steps:**
+1. Wait for page load
+**Expected:**
+- Page loads within 5 seconds
+- See "Executive Report Studio"
+- See "Build New Executive Report"
+
 ### Test: Idea Studio Page Loads
 **URL:** ${BASE_URL}/idea-studio
 **Steps:**

@@ -1,4 +1,4 @@
-"""Client portal API — magic links, safe bundle upload, download, outbound polling for OpenClaw."""
+"""Client portal API — magic links, safe bundle upload, download, operator listing, outbound polling."""
 from __future__ import annotations
 
 import hmac
@@ -11,7 +11,7 @@ import tarfile
 import time
 import uuid
 import zipfile
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -28,6 +28,10 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/portal", tags=["portal"])
 
 INSECURE_DEFAULT_SECRETS = {"", "change-me-in-production", "changeme", "secret"}
+
+
+def _utc_now_naive() -> datetime:
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 def _bundle_root() -> Path:
@@ -109,7 +113,7 @@ def _validate_portal_token(token: str, db: Session) -> tuple[PortalDeliverable, 
     ml = db.query(PortalMagicLink).filter(PortalMagicLink.jti == jti).first()
     if not ml or ml.deliverable_id != did:
         raise HTTPException(status_code=401, detail="unknown link")
-    if ml.expires_at and ml.expires_at < datetime.utcnow():
+    if ml.expires_at and ml.expires_at < _utc_now_naive():
         raise HTTPException(status_code=401, detail="expired")
     return d, ml, claims
 
@@ -160,6 +164,116 @@ def _send_ses_email(to_addr: str, subject: str, body_text: str) -> bool:
         return False
 
 
+def create_magic_link_for_deliverable(
+    d: PortalDeliverable,
+    db: Session,
+    send_email: bool = False,
+) -> dict:
+    """Mint and persist a signed magic link for an existing ready deliverable."""
+    secret = _jwt_secret()
+    if d.status != "ready":
+        raise HTTPException(status_code=400, detail="bundle not uploaded")
+
+    jti = uuid.uuid4().hex
+    exp_dt = d.expires_at or (_utc_now_naive() + timedelta(days=14))
+    exp_ts = int(exp_dt.replace(tzinfo=timezone.utc).timestamp()) if exp_dt else int(time.time()) + 86400 * 14
+
+    ml = PortalMagicLink(
+        jti=jti,
+        deliverable_id=d.id,
+        uses_remaining=3,
+        expires_at=exp_dt,
+    )
+    db.add(ml)
+    db.commit()
+
+    token = jwt.encode(
+        {"sub": d.id, "jti": jti, "exp": exp_ts, "typ": "portal"},
+        secret,
+        algorithm="HS256",
+    )
+    magic_url = f"{_public_base()}/portal/{token}"
+    if send_email:
+        ok = _send_ses_email(
+            d.client_email,
+            f"Review: {d.title or 'Deliverable'}",
+            f"Please open your private review link:\n{magic_url}\n",
+        )
+        if not ok:
+            logger.info("Magic link (email may be skipped): %s", magic_url)
+    return {
+        "magicLinkUrl": magic_url,
+        "url": magic_url,
+        "token": token,
+        "expiresAt": exp_dt.isoformat() + "Z",
+    }
+
+
+@router.get("/deliverables")
+def list_deliverables(
+    limit: int = 100,
+    _: None = Depends(_require_api_key),
+    db: Session = Depends(get_db),
+):
+    """List client deliverables with review action summaries for the operator console."""
+    capped = max(1, min(limit, 500))
+    rows = (
+        db.query(PortalDeliverable)
+        .order_by(PortalDeliverable.created_at.desc())
+        .limit(capped)
+        .all()
+    )
+    items = []
+    for d in rows:
+        actions = (
+            db.query(PortalAction)
+            .filter(PortalAction.deliverable_id == d.id, PortalAction.action != "view")
+            .order_by(PortalAction.created_at.desc(), PortalAction.id.desc())
+            .limit(10)
+            .all()
+        )
+        links = (
+            db.query(PortalMagicLink)
+            .filter(PortalMagicLink.deliverable_id == d.id)
+            .all()
+        )
+        parsed_actions = []
+        for a in actions:
+            try:
+                payload = json.loads(a.payload_json or "{}")
+            except json.JSONDecodeError:
+                payload = {}
+            parsed_actions.append(
+                {
+                    "id": a.id,
+                    "action": a.action,
+                    "message": payload.get("message", ""),
+                    "createdAt": a.created_at.isoformat() + "Z" if a.created_at else None,
+                }
+            )
+        latest = parsed_actions[0] if parsed_actions else None
+        items.append(
+            {
+                "id": d.id,
+                "opportunityId": d.opportunity_id,
+                "title": d.title,
+                "description": d.description,
+                "kind": d.kind,
+                "clientEmail": d.client_email,
+                "status": d.status,
+                "latestAction": latest["action"] if latest else None,
+                "latestMessage": latest["message"] if latest else "",
+                "actionCount": len(parsed_actions),
+                "actions": parsed_actions,
+                "linkCount": len(links),
+                "usesRemaining": sum(max(0, int(lnk.uses_remaining or 0)) for lnk in links),
+                "expiresAt": d.expires_at.isoformat() + "Z" if d.expires_at else None,
+                "createdAt": d.created_at.isoformat() + "Z" if d.created_at else None,
+            }
+        )
+    return {"deliverables": items}
+
+
 @router.post("/deliverables")
 def create_deliverable(
     body: DeliverableCreate,
@@ -167,7 +281,7 @@ def create_deliverable(
     db: Session = Depends(get_db),
 ):
     did = str(uuid.uuid4())
-    exp = datetime.utcnow() + timedelta(days=max(1, min(body.expires_in_days, 90)))
+    exp = _utc_now_naive() + timedelta(days=max(1, min(body.expires_in_days, 90)))
     bundle_dir = _bundle_root() / did
     bundle_dir.mkdir(parents=True, exist_ok=True)
     d = PortalDeliverable(
@@ -227,46 +341,10 @@ def mint_link(
     _: None = Depends(_require_api_key),
     db: Session = Depends(get_db),
 ):
-    secret = _jwt_secret()
     d = db.query(PortalDeliverable).filter(PortalDeliverable.id == deliverable_id).first()
     if not d:
         raise HTTPException(status_code=404, detail="not found")
-    if d.status != "ready":
-        raise HTTPException(status_code=400, detail="bundle not uploaded")
-
-    jti = uuid.uuid4().hex
-    exp_dt = d.expires_at or (datetime.utcnow() + timedelta(days=14))
-    exp_ts = int(time.mktime(exp_dt.timetuple())) if exp_dt else int(time.time()) + 86400 * 14
-
-    ml = PortalMagicLink(
-        jti=jti,
-        deliverable_id=deliverable_id,
-        uses_remaining=3,
-        expires_at=exp_dt,
-    )
-    db.add(ml)
-    db.commit()
-
-    token = jwt.encode(
-        {"sub": deliverable_id, "jti": jti, "exp": exp_ts, "typ": "portal"},
-        secret,
-        algorithm="HS256",
-    )
-    magic_url = f"{_public_base()}/portal/{token}"
-    if body.sendEmail:
-        ok = _send_ses_email(
-            d.client_email,
-            f"Review: {d.title or 'Deliverable'}",
-            f"Please open your private review link:\n{magic_url}\n",
-        )
-        if not ok:
-            logger.info("Magic link (email may be skipped): %s", magic_url)
-    return {
-        "magicLinkUrl": magic_url,
-        "url": magic_url,
-        "token": token,
-        "expiresAt": exp_dt.isoformat() + "Z",
-    }
+    return create_magic_link_for_deliverable(d, db, send_email=body.sendEmail)
 
 
 @router.delete("/deliverables/{deliverable_id}")
