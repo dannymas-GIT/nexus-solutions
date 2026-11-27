@@ -10,7 +10,8 @@ import {
   ChevronRight,
   Folder,
   Database,
-  Briefcase
+  Briefcase,
+  Lightbulb
 } from 'lucide-react';
 
 interface NavItem {
@@ -38,6 +39,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   // Define the new main sidebar navigation items
   const mainNavItems: NavItem[] = [
     {
+      icon: <Lightbulb size={20} />,
+      label: 'Idea Studio',
+      path: '/idea-studio',
+    },
+    {
       icon: <Database size={20} />,
       label: 'Data Convergence Framework',
       path: '/data-convergence',
@@ -57,7 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const isActive = (path: string) => {
-    return location.pathname === path;
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
   const toggleSidebar = () => {

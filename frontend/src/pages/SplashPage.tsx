@@ -4,7 +4,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Rocket, Database, BarChart3 } from 'lucide-react';
+import { ChevronRight, Rocket, Database, BarChart3, Lightbulb } from 'lucide-react';
 import Navbar from '../components/navigation/Navbar';
 
 const SplashPage: React.FC = () => {
@@ -39,7 +39,19 @@ const SplashPage: React.FC = () => {
             </p>
           </div>
 
-          <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto mt-16 transition-all duration-700 delay-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}>
+          <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mt-16 transition-all duration-700 delay-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}>
+            <button
+              onClick={() => navigate('/idea-studio')}
+              className="group flex flex-col items-center p-8 rounded-2xl bg-white/10 backdrop-blur border border-white/20 hover:bg-blue-500/20 hover:border-blue-300/50 transition-all duration-300"
+            >
+              <Lightbulb className="h-12 w-12 text-blue-300 mb-4 group-hover:scale-110 transition-transform" />
+              <span className="font-semibold text-lg mb-2">Idea Studio</span>
+              <span className="text-blue-200/80 text-sm mb-4 text-center">Validate product briefs, run sprints, and stage on *.nexus-solutions.us</span>
+              <span className="flex items-center text-blue-300 font-medium">
+                Open Idea Studio
+                <ChevronRight className="w-5 h-5 ml-1" />
+              </span>
+            </button>
             <button
               onClick={() => navigate('/dashboard')}
               className="group flex flex-col items-center p-8 rounded-2xl bg-white/10 backdrop-blur border border-white/20 hover:bg-amber-500/20 hover:border-amber-400/40 transition-all duration-300"

@@ -21,4 +21,18 @@ STORAGE_PROVIDER=onedrive
 ONEDRIVE_ROOT_FOLDER=NexusBusinessPlan
 
 # Local storage settings (if using local storage)
-LOCAL_STORAGE_PATH=/opt/projects/NexusBusinessBuilder/output 
+LOCAL_STORAGE_PATH=/opt/projects/NexusBusinessBuilder/output
+
+# Idea Studio (shared TheHelm control-api integration)
+# Base URL of TheHelm control-api (e.g. https://control.example.com or http://127.0.0.1:8089)
+IDEA_STUDIO_API_BASE_URL=
+# Optional override for the hosted public UI link (defaults to <IDEA_STUDIO_API_BASE_URL>/idea-studio?mode=public&tenant=nexus-solutions)
+IDEA_STUDIO_PUBLIC_URL=
+# Tenant slug enforced on all proxied Idea Studio requests
+IDEA_STUDIO_TENANT_ID=nexus-solutions
+# Staging domain rule for graduated Nexus-Solutions apps (<slug>.nexus-solutions.us)
+IDEA_STUDIO_STAGING_DOMAIN=nexus-solutions.us
+# Optional Bearer token if upstream control-api requires authentication
+# IDEA_STUDIO_API_TOKEN=
+# Timeout in seconds for long-running M1/M2/sprint proxy calls
+IDEA_STUDIO_TIMEOUT_SECONDS=180

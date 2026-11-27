@@ -56,14 +56,21 @@ const ServicesPage: React.FC = () => {
               <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-green-400 mt-0.5" /> Analysis Engine for KPI definition and tracking.</li>
               <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-green-400 mt-0.5" /> Integrations hub to connect your existing tools.</li>
               <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-green-400 mt-0.5" /> Document and reporting templates for client-ready deliverables.</li>
+              <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-green-400 mt-0.5" /> Idea Studio for M1/M2 validation, gated graduation, autonomous sprints, and *.nexus-solutions.us staging.</li>
               <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-green-400 mt-0.5" /> Secure client portal for review and approval workflows.</li>
             </ul>
           </div>
 
           <div className="flex flex-wrap gap-4 items-center">
             <button
-              onClick={() => navigate('/analysis-engine/set-kpis')}
+              onClick={() => navigate('/idea-studio')}
               className="px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg font-medium"
+            >
+              Launch Idea Studio
+            </button>
+            <button
+              onClick={() => navigate('/analysis-engine/set-kpis')}
+              className="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg font-medium"
             >
               Explore Analysis Engine
             </button>

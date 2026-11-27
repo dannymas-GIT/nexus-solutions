@@ -12,6 +12,7 @@ import SetKpisPage from './pages/analysis-engine/SetKpisPage';
 import PortalPage from './pages/PortalPage';
 import ServicesPage from './pages/ServicesPage';
 import PackagesPage from './pages/PackagesPage';
+import IdeaStudioPage from './pages/IdeaStudioPage';
 
 /**
  * App component
@@ -94,6 +95,18 @@ function App() {
         <Route path="/analysis-engine/set-kpis" element={
           <Layout>
             <SetKpisPage />
+          </Layout>
+        } />
+
+        {/* Idea Studio routes */}
+        <Route path="/idea-studio" element={
+          <Layout>
+            <IdeaStudioPage />
+          </Layout>
+        } />
+        <Route path="/idea-studio/:tab" element={
+          <Layout>
+            <IdeaStudioPage />
           </Layout>
         } />
         

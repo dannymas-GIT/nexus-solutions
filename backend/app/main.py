@@ -61,12 +61,14 @@ async def root():
     }
 
 # Import and include routes
-from .api.routes import documents, portal, storage
+from .api.routes import documents, idea_studio, portal, storage
 
 app.include_router(storage.router, prefix="/api/v1")
 app.include_router(documents.router, prefix="/api/v1")
 # Client deliverable review (Income Scout → OpenClaw publish); API key + JWT auth inside router
 app.include_router(portal.router, prefix="/api")
+# Shared Idea Studio tenant-scoped proxy (TheHelm control-api; tenant=nexus-solutions)
+app.include_router(idea_studio.router, prefix="/api")
 
 @app.on_event("startup")
 async def startup_event():
