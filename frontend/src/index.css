@@ -2,8 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --font-size-body: 1.125rem;
+  --font-size-ui: 1rem;
+  --font-size-caption: 0.875rem;
+}
+
 body {
   margin: 0;
+  font-size: 1rem;
+  line-height: 1.55;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -16,12 +24,15 @@ code {
     monospace;
 }
 
-/* Fix for form elements */
-input, select, textarea {
+/* Fix for form elements (keep checkboxes & radios native-sized) */
+input:not([type='checkbox']):not([type='radio']),
+select,
+textarea {
   border-width: 1px;
   border-radius: 0.375rem;
   padding: 0.5rem 0.75rem;
   width: 100%;
+  font-size: 1rem;
 }
 
 input:focus, select:focus, textarea:focus {

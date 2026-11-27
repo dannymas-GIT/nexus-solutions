@@ -1,90 +1,98 @@
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import os
-from dotenv import load_dotenv
 import logging
+from contextlib import asynccontextmanager
 from pathlib import Path
 
-# Load environment variables
+from dotenv import load_dotenv
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from .api.routes import (
+    admin_users,
+    auth,
+    convergence,
+    documents,
+    idea_studio,
+    leads,
+    portal,
+    storage,
+)
+from .core.config import settings
+
 load_dotenv()
 
-# Create logs directory if it doesn't exist
 logs_dir = Path("./logs")
-logs_dir.mkdir(exist_ok=True)
+handlers: list[logging.Handler] = [logging.StreamHandler()]
+try:
+    logs_dir.mkdir(exist_ok=True)
+    handlers.append(logging.FileHandler(logs_dir / "app.log"))
+except OSError:
+    pass
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler(Path("./logs/app.log"))
-    ]
+    handlers=handlers,
 )
 logger = logging.getLogger(__name__)
 
-# Create FastAPI app
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    logger.info("Starting Nexus Solutions API...")
+    yield
+    logger.info("Shutting down Nexus Solutions API...")
+
+
 app = FastAPI(
-    title="Nexus Business Builder API",
-    description="API for generating comprehensive business plans",
-    version="0.1.0"
+    title="Nexus Solutions API",
+    description="Corporate data convergence, KPI intelligence, executive reports, RBAC, Idea Studio, and client portal API",
+    version="0.3.0",
+    lifespan=lifespan,
 )
 
-# Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For development only, restrict in production
+    allow_origins=settings.BACKEND_CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Health check endpoint
+
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "version": "0.1.0"}
+    return {"status": "healthy", "version": "0.3.0"}
 
 
 @app.get("/api/health")
 async def api_health_check():
     """Alias for reverse-proxy health checks expecting /api/health."""
-    return {"status": "healthy", "version": "0.1.0"}
+    return {"status": "healthy", "version": "0.3.0"}
 
-# Root endpoint
+
 @app.get("/")
 async def root():
     return {
-        "message": "Welcome to Nexus Business Builder API",
+        "message": "Welcome to Nexus Solutions API",
         "docs": "/docs",
-        "health": "/health"
+        "health": "/api/health",
     }
 
-# Import and include routes
-from .api.routes import documents, idea_studio, portal, storage
 
 app.include_router(storage.router, prefix="/api/v1")
 app.include_router(documents.router, prefix="/api/v1")
-# Client deliverable review (Income Scout → OpenClaw publish); API key + JWT auth inside router
+app.include_router(leads.router, prefix="/api/v1")
+app.include_router(convergence.router, prefix="/api/v1")
+# Auth, Profile (/api/v1/auth/*, /api/users/me/password) and Admin Users (/api/admin/users/*)
+app.include_router(auth.router, prefix="/api")
+app.include_router(admin_users.router, prefix="/api")
+# Client deliverable review (Income Scout / Greenhouse / Report Studio publish)
 app.include_router(portal.router, prefix="/api")
 # Shared Idea Studio tenant-scoped proxy (TheHelm control-api; tenant=nexus-solutions)
 app.include_router(idea_studio.router, prefix="/api")
 
-@app.on_event("startup")
-async def startup_event():
-    logger.info("Starting Nexus Business Builder API...")
-    # Future startup tasks:
-    # - Connect to database
-    # - Initialize services
-    # - Validate integrations
-    
-@app.on_event("shutdown")
-async def shutdown_event():
-    logger.info("Shutting down Nexus Business Builder API...")
-    # Future shutdown tasks:
-    # - Close database connections
-    # - Clean up resources
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)

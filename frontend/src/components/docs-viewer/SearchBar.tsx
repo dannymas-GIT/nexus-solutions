@@ -160,7 +160,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onResultSelect }) => {
                 >
                   <div className="font-medium">{result.title}</div>
                   <div className="text-sm text-gray-600 truncate">{result.snippet}</div>
-                  <div className="text-xs text-gray-500">{result.path}</div>
+                  <div className="text-sm text-gray-500">{result.path}</div>
                 </button>
               </li>
             ))}

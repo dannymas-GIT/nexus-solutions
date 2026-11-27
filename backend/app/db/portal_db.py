@@ -1,10 +1,20 @@
-"""SQLite/Postgres portal database for client deliverable review."""
+"""SQLite/Postgres database for portal, audit leads, convergence, and RBAC user management."""
 from __future__ import annotations
 
 import os
 from pathlib import Path
 
-from sqlalchemy import Column, DateTime, Integer, String, Text, create_engine, func
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    Integer,
+    String,
+    Text,
+    create_engine,
+    func,
+)
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 Base = declarative_base()
@@ -47,8 +57,113 @@ class PortalAction(Base):
     sent_to_origin_at = Column(DateTime, nullable=True)
 
 
+class AuditLead(Base):
+    __tablename__ = "audit_leads"
+
+    id = Column(String(36), primary_key=True)
+    name = Column(String(256), nullable=False)
+    email = Column(String(256), index=True, nullable=False)
+    company = Column(String(256), nullable=False)
+    role = Column(String(256), default="")
+    data_sources_json = Column(Text, default="[]")
+    pain_point = Column(Text, default="")
+    website = Column(String(512), default="")
+    source_page = Column(String(128), default="/request-audit")
+    status = Column(String(32), default="new")
+    created_at = Column(DateTime, server_default=func.now())
+
+
+class DataSourceSnapshot(Base):
+    __tablename__ = "data_sources"
+
+    id = Column(String(36), primary_key=True)
+    name = Column(String(256), nullable=False)
+    source_type = Column(String(64), default="csv")
+    category = Column(String(64), default="Operations")
+    status = Column(String(32), default="synced")
+    filename = Column(String(512), default="")
+    row_count = Column(Integer, default=0)
+    columns_json = Column(Text, default="[]")
+    sample_rows_json = Column(Text, default="[]")
+    config_json = Column(Text, default="{}")
+    last_synced_at = Column(DateTime, server_default=func.now())
+    created_at = Column(DateTime, server_default=func.now())
+
+
+class KpiMetric(Base):
+    __tablename__ = "kpi_metrics"
+
+    id = Column(String(36), primary_key=True)
+    name = Column(String(256), nullable=False)
+    category = Column(String(64), default="Revenue")
+    description = Column(Text, default="")
+    unit = Column(String(32), default="USD")
+    direction = Column(String(16), default="higher_is_better")
+    target_value = Column(Float, nullable=False, default=0.0)
+    actual_value = Column(Float, nullable=False, default=0.0)
+    source_id = Column(String(36), index=True, nullable=True)
+    source_column = Column(String(256), nullable=True)
+    aggregation = Column(String(32), default="manual")
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, server_default=func.now())
+
+
+class ExecutiveReport(Base):
+    __tablename__ = "executive_reports"
+
+    id = Column(String(36), primary_key=True)
+    title = Column(String(512), nullable=False)
+    company_name = Column(String(256), default="")
+    period_label = Column(String(128), default="")
+    executive_summary = Column(Text, default="")
+    kpi_ids_json = Column(Text, default="[]")
+    source_ids_json = Column(Text, default="[]")
+    portal_deliverable_id = Column(String(36), nullable=True)
+    portal_magic_link_url = Column(String(1024), nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+
+class UserAccount(Base):
+    __tablename__ = "user_accounts"
+
+    id = Column(String(36), primary_key=True)
+    email = Column(String(256), unique=True, index=True, nullable=False)
+    username = Column(String(128), unique=True, index=True, nullable=False)
+    full_name = Column(String(256), nullable=False)
+    organization_name = Column(String(256), default="Nexus Workspace")
+    role = Column(String(32), default="viewer", nullable=False)
+    password_hash = Column(String(512), nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+    must_change_password = Column(Boolean, default=False, nullable=False)
+    last_login_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+
+class AdminAuditLog(Base):
+    __tablename__ = "admin_audit_logs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    actor_user_id = Column(String(36), index=True, nullable=False)
+    actor_email = Column(String(256), nullable=False)
+    action = Column(String(64), nullable=False)
+    target_user_id = Column(String(36), index=True, nullable=True)
+    detail_json = Column(Text, default="{}")
+    created_at = Column(DateTime, server_default=func.now())
+
+
 _engine = None
 _SessionLocal = None
+
+
+def reset_engine() -> None:
+    """Reset cached SQLAlchemy engine/sessionmaker (used in tests)."""
+    global _engine, _SessionLocal
+    if _engine is not None:
+        _engine.dispose()
+    _engine = None
+    _SessionLocal = None
 
 
 def get_engine():
@@ -76,7 +191,7 @@ def get_session_factory():
 
 def get_db():
     factory = get_session_factory()
-    db = factory()
+    db: Session = factory()
     try:
         yield db
     finally:

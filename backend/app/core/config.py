@@ -1,60 +1,80 @@
-import os
+from pathlib import Path
 import secrets
-from typing import Any, Dict, List, Optional, Union
-from pydantic import AnyHttpUrl, validator
-from pydantic_settings import BaseSettings
+from typing import List, Optional, Union
+from pydantic import field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+REPO_ROOT = BACKEND_DIR.parent
+
+DEFAULT_CORS_ORIGINS = [
+    "https://nexus-solutions.us",
+    "https://www.nexus-solutions.us",
+    "http://localhost:3000",
+    "http://localhost:5173",
+]
 
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     SECRET_KEY: str = secrets.token_urlsafe(32)
-    # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
-    
-    # CORS Configuration
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
 
-    @validator("BACKEND_CORS_ORIGINS", pre=True)
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
+    # CORS Configuration (comma-separated string or JSON list)
+    BACKEND_CORS_ORIGINS: List[str] = DEFAULT_CORS_ORIGINS.copy()
+
+    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
+    @classmethod
+    def assemble_cors_origins(cls, v: Union[str, List[str], None]) -> List[str]:
+        if v is None or v == "":
+            return DEFAULT_CORS_ORIGINS.copy()
         if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
-            return v
+            origins = [i.strip() for i in v.split(",") if i.strip()]
+            return origins or DEFAULT_CORS_ORIGINS.copy()
+        if isinstance(v, list):
+            return [str(i).strip() for i in v if str(i).strip()]
         raise ValueError(v)
 
     # Project Configuration
-    PROJECT_NAME: str = "Nexus Business Builder"
-    
-    # Azure AD Configuration
-    AZURE_TENANT_ID: Optional[str] = "8fe97a37-6956-4bc2-8253-f97f816bc733"
-    AZURE_CLIENT_ID: Optional[str] = "4bc94816-f1d4-4cff-8bf7-e4efb061d662"
-    CERT_PATH: Optional[str] = "/opt/projects/NexusBusinessBuilder/certificates/NexusBusinessAgent.pfx"
-    CERT_PASSWORD: Optional[str] = "NexusAgent123"
-    
+    PROJECT_NAME: str = "Nexus Solutions"
+    NEXUS_WORKSPACE_ROOT: str = str(REPO_ROOT)
+
+    # Admin / Storage API key (falls back to PORTAL_API_KEY when unset)
+    NEXUS_ADMIN_API_KEY: Optional[str] = None
+
+    # Optional notification recipient for corporate audit leads
+    LEADS_NOTIFY_EMAIL: Optional[str] = None
+
+    # Azure AD Configuration (supply via environment variables)
+    AZURE_TENANT_ID: Optional[str] = None
+    AZURE_CLIENT_ID: Optional[str] = None
+    CERT_PATH: Optional[str] = None
+    CERT_PASSWORD: Optional[str] = None
+
     # Graph API Configuration
     GRAPH_API_VERSION: str = "v1.0"
-    
+
     # Storage Configuration
-    STORAGE_PROVIDER: str = "onedrive"  # Options: onedrive, sharepoint, local
-    
+    STORAGE_PROVIDER: str = "local"  # Options: onedrive, sharepoint, local
+
     # SharePoint settings
     SHAREPOINT_SITE_NAME: Optional[str] = None
     SHAREPOINT_DOCUMENT_LIBRARY: str = "documents"
-    
+
     # OneDrive settings
     ONEDRIVE_ROOT_FOLDER: str = "NexusSolutions"
-    
+
     # Local storage settings
-    LOCAL_STORAGE_PATH: str = "/opt/projects/NexusBusinessBuilder/backend/output"
-    
+    LOCAL_STORAGE_PATH: str = str(BACKEND_DIR / "output")
+
     # Template paths
-    DOCX_TEMPLATES_PATH: str = "./data/templates/docx"
-    PPTX_TEMPLATES_PATH: str = "./data/templates/pptx"
-    PDF_TEMPLATES_PATH: str = "./data/templates/pdf"
-    
+    DOCX_TEMPLATES_PATH: str = str(BACKEND_DIR / "data" / "templates" / "docx")
+    PPTX_TEMPLATES_PATH: str = str(BACKEND_DIR / "data" / "templates" / "pptx")
+    PDF_TEMPLATES_PATH: str = str(BACKEND_DIR / "data" / "templates" / "pdf")
+
     # OpenAI Configuration
     OPENAI_API_KEY: Optional[str] = None
-    
+
     # Database Configuration
     DATABASE_URL: Optional[str] = None
 
@@ -66,9 +86,7 @@ class Settings(BaseSettings):
     IDEA_STUDIO_API_TOKEN: Optional[str] = None
     IDEA_STUDIO_TIMEOUT_SECONDS: int = 180
 
-    class Config:
-        case_sensitive = True
-        env_file = ".env"
+    model_config = SettingsConfigDict(case_sensitive=True, env_file=".env", extra="ignore")
 
 
-settings = Settings() 
+settings = Settings()

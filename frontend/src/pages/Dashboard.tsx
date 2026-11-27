@@ -4,6 +4,7 @@ import {
   Activity,
   AlertCircle,
   ArrowRight,
+  Database,
   DollarSign,
   ExternalLink,
   FileText,
@@ -11,6 +12,7 @@ import {
   Lightbulb,
   RefreshCw,
   Rocket,
+  Send,
   Target,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -19,6 +21,7 @@ import {
   IDEA_STUDIO_TENANT,
   ideaStudioApi,
 } from '@/services/ideaStudioApi';
+import { convergenceApi, type ConvergenceOverview } from '@/services/convergenceApi';
 import type {
   FinOpsRollup,
   IdeaRecord,
@@ -56,6 +59,7 @@ const Dashboard: React.FC = () => {
     proxyMode: 'backend',
   });
   const [configChecked, setConfigChecked] = useState(false);
+  const [overview, setOverview] = useState<ConvergenceOverview | null>(null);
   const [ideas, setIdeas] = useState<IdeaRecord[]>([]);
   const [sprints, setSprints] = useState<SprintRecord[]>([]);
   const [staging, setStaging] = useState<StagingDeployment[]>([]);
@@ -67,7 +71,17 @@ const Dashboard: React.FC = () => {
     setLoading(true);
     setErrorMessage('');
     try {
-      const cfg = await ideaStudioApi.getConfig();
+      const [convOverview, cfg] = await Promise.all([
+        convergenceApi.getOverview().catch(() => null),
+        ideaStudioApi.getConfig().catch(() => ({
+          configured: false,
+          tenant: IDEA_STUDIO_TENANT,
+          stagingDomain: IDEA_STUDIO_STAGING_DOMAIN,
+          hostedUiUrl: null,
+          proxyMode: 'backend' as const,
+        })),
+      ]);
+      setOverview(convOverview);
       setConfig(cfg);
       setConfigChecked(true);
       if (!cfg.configured) {
@@ -90,9 +104,7 @@ const Dashboard: React.FC = () => {
       setFinops(finopsData);
     } catch (err) {
       setErrorMessage(
-        err instanceof Error
-          ? err.message
-          : 'Unable to load live Idea Studio metrics.'
+        err instanceof Error ? err.message : 'Unable to load live Command Center metrics.'
       );
     } finally {
       setLoading(false);
@@ -104,40 +116,32 @@ const Dashboard: React.FC = () => {
   }, [loadDashboard]);
 
   const graduatedIdeas = ideas.filter(
-    (i) =>
-      ['scaffold', 'sprint', 'production'].includes(i.stage || '') ||
-      Boolean(i.appSlug)
+    (i) => ['scaffold', 'sprint', 'production'].includes(i.stage || '') || Boolean(i.appSlug)
   );
   const inReviewCount = ideas.filter((i) =>
     ['research', 'feasibility'].includes(i.stage || '')
   ).length;
   const totalSprintTasks = sprints.reduce(
-    (sum, sp) =>
-      sum + (Array.isArray(sp.tasks) ? sp.tasks.length : (sp.taskIds || []).length),
+    (sum, sp) => sum + (Array.isArray(sp.tasks) ? sp.tasks.length : (sp.taskIds || []).length),
     0
   );
   const completedSprintTasks = sprints.reduce(
     (sum, sp) =>
       sum +
       (Array.isArray(sp.tasks)
-        ? sp.tasks.filter(
-            (t) => String(t.status || '').toLowerCase() === 'completed'
-          ).length
+        ? sp.tasks.filter((t) => String(t.status || '').toLowerCase() === 'completed').length
         : 0),
     0
   );
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
+    <div className="max-w-7xl mx-auto space-y-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Nexus Operations &amp; Idea Studio Dashboard
-          </h1>
-          <p className="text-gray-600 mt-1 text-base">
-            Live overview of your business plans, Idea Studio validation gates,
-            active sprints, and <code className="text-sm">*.{config.stagingDomain}</code>{' '}
-            staging previews for <strong>{config.tenant}</strong>.
+          <h1 className="text-3xl font-bold text-slate-900">Nexus Command Center</h1>
+          <p className="text-slate-600 mt-1 text-lg">
+            Converge operational data, monitor corporate KPIs, publish executive reports, and manage
+            Idea Studio initiatives.
           </p>
         </div>
 
@@ -148,147 +152,198 @@ const Dashboard: React.FC = () => {
             leftIcon={RefreshCw}
             onClick={loadDashboard}
             disabled={loading}
-            className="min-h-[44px] border-gray-300 text-gray-800"
+            className="min-h-[44px] border-slate-300 text-slate-800"
           >
             Refresh
           </Button>
           <Link
-            to="/create-business-plan"
-            className="inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2 rounded-lg bg-brand-primary text-white font-medium hover:bg-blue-800 transition-colors"
+            to="/integrations"
+            className="inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 text-base font-medium hover:bg-slate-100"
           >
-            <FileText className="w-4 h-4" />
-            <span>New Business Plan</span>
+            <Database className="w-4 h-4" />
+            <span>Upload CSV</span>
           </Link>
           <Link
-            to="/idea-studio"
-            className="inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors"
+            to="/reports"
+            className="inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2 rounded-xl bg-blue-700 text-white text-base font-semibold hover:bg-blue-800"
           >
-            <Lightbulb className="w-4 h-4" />
-            <span>Open Idea Studio</span>
+            <FileText className="w-4 h-4" />
+            <span>Report Studio</span>
           </Link>
         </div>
       </div>
 
-      {configChecked && !config.configured && (
-        <div
-          className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900 flex items-start gap-3"
-          role="status"
-        >
-          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-          <p className="text-sm leading-relaxed">
-            Live Idea Studio metrics will populate automatically once{' '}
-            <code className="bg-amber-100 px-1 py-0.5 rounded">
-              IDEA_STUDIO_API_BASE_URL
-            </code>{' '}
-            is configured on the Nexus backend.
-          </p>
-        </div>
-      )}
-
       {errorMessage && (
         <div
           role="alert"
-          className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-900 flex items-center gap-2 text-sm"
+          className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-900 flex items-center gap-2 text-base"
         >
           <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
           <span>{errorMessage}</span>
         </div>
       )}
 
-      {/* Key metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-blue-100 text-brand-primary mr-4">
-              <Lightbulb size={24} />
+      {/* Data Convergence Summary Cards */}
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <Link
+          to="/integrations"
+          className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:border-blue-400 transition-colors"
+        >
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-blue-100 text-blue-800">
+              <Database size={24} />
             </div>
             <div>
-              <p className="text-sm text-gray-500 font-medium">
-                Plans &amp; Briefs
-              </p>
-              <p className="text-2xl font-bold text-gray-900">{ideas.length}</p>
+              <p className="text-sm font-medium text-slate-600">Data Sources</p>
+              <p className="text-3xl font-bold text-slate-900">{overview?.sourceCount ?? 0}</p>
             </div>
           </div>
-          <p className="text-xs text-gray-500 mt-4">
-            {inReviewCount} currently in M1/M2 validation
+          <p className="text-sm text-slate-600 mt-4">
+            {(overview?.totalRowsIngested ?? 0).toLocaleString()} rows converged
           </p>
-        </div>
+        </Link>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-emerald-100 text-emerald-700 mr-4">
-              <Rocket size={24} />
+        <Link
+          to="/analysis-engine/set-kpis"
+          className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:border-emerald-400 transition-colors"
+        >
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-emerald-100 text-emerald-800">
+              <Target size={24} />
             </div>
             <div>
-              <p className="text-sm text-gray-500 font-medium">
-                Graduated Apps
-              </p>
-              <p className="text-2xl font-bold text-gray-900">
-                {graduatedIdeas.length}
-              </p>
+              <p className="text-sm font-medium text-slate-600">Tracked KPIs</p>
+              <p className="text-3xl font-bold text-slate-900">{overview?.kpiCount ?? 0}</p>
             </div>
           </div>
-          <p className="text-xs text-gray-500 mt-4">
-            {staging.length} staging deployment(s) on *.{config.stagingDomain}
+          <p className="text-sm text-slate-600 mt-4">
+            {overview?.kpisOnTrack ?? 0} on track · {overview?.kpisAtRisk ?? 0} at risk ·{' '}
+            {overview?.kpisOffTrack ?? 0} off track
           </p>
-        </div>
+        </Link>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-purple-100 text-purple-700 mr-4">
-              <Activity size={24} />
+        <Link
+          to="/reports"
+          className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:border-indigo-400 transition-colors"
+        >
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-indigo-100 text-indigo-800">
+              <FileText size={24} />
             </div>
             <div>
-              <p className="text-sm text-gray-500 font-medium">Active Sprints</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {sprints.length}
-              </p>
+              <p className="text-sm font-medium text-slate-600">Executive Reports</p>
+              <p className="text-3xl font-bold text-slate-900">{overview?.reportCount ?? 0}</p>
             </div>
           </div>
-          <p className="text-xs text-gray-500 mt-4">
-            {completedSprintTasks}/{totalSprintTasks} sprint tasks completed
-          </p>
-        </div>
+          <p className="text-sm text-slate-600 mt-4">PDF, DOCX, and PPTX export ready</p>
+        </Link>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-amber-100 text-amber-700 mr-4">
-              <DollarSign size={24} />
+        <Link
+          to="/portal-manager"
+          className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:border-amber-400 transition-colors"
+        >
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-amber-100 text-amber-800">
+              <Send size={24} />
             </div>
             <div>
-              <p className="text-sm text-gray-500 font-medium">
-                Idea Studio FinOps
-              </p>
-              <p className="text-2xl font-bold text-gray-900">
-                {formatUsd(finops?.totalCostUsd)}
+              <p className="text-sm font-medium text-slate-600">Portal Deliverables</p>
+              <p className="text-3xl font-bold text-slate-900">
+                {overview?.publishedPortalCount ?? 0}
               </p>
             </div>
           </div>
-          <p className="text-xs text-gray-500 mt-4">
-            {finops?.callCount || 0} LLM calls ·{' '}
-            {Number(finops?.totalTokens || 0).toLocaleString()} tokens
-          </p>
-        </div>
-      </div>
+          <p className="text-sm text-slate-600 mt-4">Shared via expiring client magic links</p>
+        </Link>
+      </section>
 
-      {/* Main content columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 lg:col-span-2">
-          <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Your Plans &amp; Idea Studio Pipeline
-            </h2>
+      {/* Live Corporate KPI Highlights */}
+      <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Live Corporate KPI Scorecard</h2>
+            <p className="text-base text-slate-600">
+              Metrics calculated from uploaded CSV datasets and workspace targets.
+            </p>
+          </div>
+          <Link
+            to="/analysis-engine/set-kpis"
+            className="inline-flex items-center gap-1.5 text-base font-semibold text-blue-700 hover:underline"
+          >
+            Manage KPIs
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        {overview && overview.kpis.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {overview.kpis.map((kpi) => (
+              <div
+                key={kpi.id}
+                className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2"
+              >
+                <p className="text-sm font-semibold text-slate-700 truncate">{kpi.name}</p>
+                <p className="text-2xl font-bold text-slate-900">{kpi.formattedActual}</p>
+                <div className="flex items-center justify-between text-sm text-slate-600">
+                  <span>Target: {kpi.formattedTarget}</span>
+                  <span className="font-semibold text-slate-900">{kpi.attainmentPct}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-6 rounded-xl bg-slate-50 border border-dashed border-slate-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <p className="text-base text-slate-700">
+              Start the convergence loop: upload a CSV export, track your first corporate KPIs, and
+              export a board-ready report in minutes.
+            </p>
             <Link
-              to="/my-plans"
-              className="text-sm font-medium text-brand-primary hover:underline inline-flex items-center gap-1"
+              to="/integrations"
+              className="inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg bg-slate-900 text-white text-base font-semibold shrink-0"
             >
-              <span>View All</span>
+              Get Started
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
+      </section>
+
+      {/* Idea Studio Pipeline & Staging */}
+      {configChecked && !config.configured && (
+        <div
+          className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950 flex items-start gap-3"
+          role="status"
+        >
+          <AlertCircle className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" />
+          <p className="text-base leading-relaxed">
+            Idea Studio metrics populate automatically when{' '}
+            <code className="bg-amber-100 px-1.5 py-0.5 rounded">IDEA_STUDIO_API_BASE_URL</code> is
+            configured on the backend.
+          </p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 lg:col-span-2">
+          <div className="p-6 border-b border-slate-200 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">Idea Studio Pipeline</h2>
+              <p className="text-sm text-slate-600">
+                {ideas.length} briefs · {inReviewCount} in M1/M2 validation · {graduatedIdeas.length}{' '}
+                graduated · FinOps {formatUsd(finops?.totalCostUsd)}
+              </p>
+            </div>
+            <Link
+              to="/idea-studio"
+              className="text-base font-semibold text-blue-700 hover:underline inline-flex items-center gap-1"
+            >
+              <span>Open Studio</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
           <div className="p-6">
             {ideas.length > 0 ? (
-              <ul className="divide-y divide-gray-200">
+              <ul className="divide-y divide-slate-200">
                 {ideas.slice(0, 6).map((idea) => (
                   <li
                     key={idea.id}
@@ -297,21 +352,21 @@ const Dashboard: React.FC = () => {
                     <div>
                       <Link
                         to={`/idea-studio/inbox?idea=${encodeURIComponent(idea.id)}`}
-                        className="text-base font-semibold text-gray-900 hover:text-brand-primary"
+                        className="text-base font-semibold text-slate-900 hover:text-blue-700"
                       >
                         {idea.title}
                       </Link>
-                      <p className="text-sm text-gray-500 mt-0.5 line-clamp-1">
+                      <p className="text-sm text-slate-600 mt-0.5 line-clamp-1">
                         {idea.description || 'No description provided.'}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-brand-primary">
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <span className="inline-flex px-3 py-1 rounded-full text-sm font-semibold bg-blue-50 text-blue-900 border border-blue-200">
                         {formatStageLabel(idea.stage)}
                       </span>
                       <Link
                         to={`/idea-studio/inbox?idea=${encodeURIComponent(idea.id)}`}
-                        className="text-sm font-medium text-brand-primary hover:underline"
+                        className="text-base font-medium text-blue-700 hover:underline"
                       >
                         Inspect
                       </Link>
@@ -320,23 +375,24 @@ const Dashboard: React.FC = () => {
                 ))}
               </ul>
             ) : (
-              <div className="text-center py-10 space-y-3">
-                <p className="text-gray-600 text-base">
-                  No plans or briefs submitted yet for{' '}
-                  <strong>{config.tenant}</strong>.
+              <div className="text-center py-8 space-y-4">
+                <p className="text-slate-700 text-base">
+                  No Idea Studio briefs submitted yet for <strong>{config.tenant}</strong>.
                 </p>
                 <div className="flex flex-wrap justify-center gap-3">
                   <Link
                     to="/create-business-plan"
-                    className="inline-flex items-center px-4 py-2 rounded-lg bg-brand-primary text-white text-sm font-medium hover:bg-blue-800"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg bg-slate-900 text-white text-base font-medium hover:bg-slate-800"
                   >
-                    Start Business Plan Wizard
+                    <Rocket className="w-4 h-4" />
+                    Strategic Plan Wizard
                   </Link>
                   <Link
                     to="/idea-studio/submit"
-                    className="inline-flex items-center px-4 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg border border-slate-300 text-slate-800 text-base font-medium hover:bg-slate-50"
                   >
-                    Quick Brief in Idea Studio
+                    <Lightbulb className="w-4 h-4" />
+                    Submit Brief
                   </Link>
                 </div>
               </div>
@@ -344,36 +400,52 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Staging &amp; Sprints
-            </h2>
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200">
+          <div className="p-6 border-b border-slate-200 flex items-center justify-between">
+            <h2 className="text-xl font-bold text-slate-900">Staging &amp; Sprints</h2>
             <Link
               to="/idea-studio/workspace"
-              className="text-sm font-medium text-brand-primary hover:underline"
+              className="text-base font-medium text-blue-700 hover:underline"
             >
               Workspace
             </Link>
           </div>
           <div className="p-5 space-y-4">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-700">
+              <span className="inline-flex items-center gap-2 font-medium">
+                <Activity className="w-4 h-4 text-purple-700" />
+                Sprint Tasks
+              </span>
+              <span className="font-semibold text-slate-900">
+                {completedSprintTasks}/{totalSprintTasks}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-700">
+              <span className="inline-flex items-center gap-2 font-medium">
+                <DollarSign className="w-4 h-4 text-amber-700" />
+                LLM Calls
+              </span>
+              <span className="font-semibold text-slate-900">{finops?.callCount || 0}</span>
+            </div>
+
             {staging.length > 0 && (
               <div className="space-y-2">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-600">
                   Live Staging Previews
                 </h3>
                 <ul className="space-y-2">
                   {staging.map((stg, idx) => (
                     <li
                       key={stg.hostname || idx}
-                      className="p-3 rounded-lg bg-gray-50 border border-gray-200 text-sm"
+                      className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-sm"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-medium text-gray-900 inline-flex items-center gap-1.5">
-                          <Globe className="w-4 h-4 text-brand-primary" />
+                        <span className="font-semibold text-slate-900 inline-flex items-center gap-1.5">
+                          <Globe className="w-4 h-4 text-blue-700" />
                           {stg.appSlug || stg.hostname}
                         </span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-sm text-slate-600">
                           {stg.status || 'provisioned'}
                         </span>
                       </div>
@@ -382,10 +454,10 @@ const Dashboard: React.FC = () => {
                           href={stg.previewUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-1 text-xs text-brand-primary hover:underline inline-flex items-center gap-1"
+                          className="mt-1 text-sm text-blue-700 hover:underline inline-flex items-center gap-1"
                         >
                           {stg.previewUrl}
-                          <ExternalLink className="w-3 h-3" />
+                          <ExternalLink className="w-3.5 h-3.5" />
                         </a>
                       )}
                     </li>
@@ -394,47 +466,12 @@ const Dashboard: React.FC = () => {
               </div>
             )}
 
-            {sprints.length > 0 ? (
-              <div className="space-y-2">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Recent Sprints
-                </h3>
-                <ul className="divide-y divide-gray-200">
-                  {sprints.slice(0, 4).map((sp) => (
-                    <li key={sp.id} className="py-2.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm font-medium text-gray-900">
-                          Sprint {sp.number ?? 1}: {sp.name}
-                        </p>
-                        <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-700">
-                          {sp.status || 'planned'}
-                        </span>
-                      </div>
-                      {sp.appSlug && (
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          App: {sp.appSlug}
-                        </p>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <p className="text-sm text-gray-500">
-                No sprints scheduled yet. Graduate an approved brief in My App
-                Workspace to launch Sprint 1.
+            {sprints.length === 0 && (
+              <p className="text-base text-slate-600">
+                No sprints scheduled yet. Graduate an approved brief in Idea Studio to launch Sprint
+                1.
               </p>
             )}
-
-            <div className="pt-3 border-t border-gray-100">
-              <Link
-                to="/analysis-engine/set-kpis"
-                className="inline-flex items-center gap-2 text-sm font-medium text-brand-primary hover:underline"
-              >
-                <Target className="w-4 h-4" />
-                <span>Configure KPI Targets in Analysis Engine</span>
-              </Link>
-            </div>
           </div>
         </div>
       </div>

@@ -1,38 +1,40 @@
-# Azure AD App Registration for NexusBusinessAgent
-AZURE_TENANT_ID=8fe97a37-6956-4bc2-8253-f97f816bc733
-AZURE_CLIENT_ID=4bc94816-f1d4-4cff-8bf7-e4efb061d662
+# Nexus Solutions Backend Environment Template
+# Copy to .env and populate secrets from your secret store (never commit real credentials).
 
-# Certificate details (locally stored)
-CERT_PATH=/opt/projects/NexusBusinessBuilder/certificates/NexusBusinessAgent.pfx
-CERT_PASSWORD=NexusAgent123
+# CORS allowed origins (comma-separated)
+BACKEND_CORS_ORIGINS=https://nexus-solutions.us,https://www.nexus-solutions.us,http://localhost:3000,http://localhost:5173
 
-# Microsoft Graph API endpoints
+# Operator API key for /api/v1/storage/* and /api/v1/leads admin listing (falls back to PORTAL_API_KEY)
+NEXUS_ADMIN_API_KEY=
+
+# Client deliverable portal (Income Scout / Greenhouse)
+PORTAL_API_KEY=
+PORTAL_JWT_SECRET=
+PORTAL_PUBLIC_BASE=https://nexus-solutions.us
+PORTAL_BUNDLE_ROOT=./data/portal_bundles
+DATABASE_URL=
+
+# Optional SES email notifications (portal magic links & audit lead alerts)
+AWS_REGION=us-east-1
+SES_SOURCE_EMAIL=
+LEADS_NOTIFY_EMAIL=
+
+# Storage configuration (local | onedrive | sharepoint)
+STORAGE_PROVIDER=local
+LOCAL_STORAGE_PATH=./output
+ONEDRIVE_ROOT_FOLDER=NexusSolutions
+
+# Optional Microsoft 365 / Azure AD (only when STORAGE_PROVIDER=onedrive or sharepoint)
+AZURE_TENANT_ID=
+AZURE_CLIENT_ID=
+CERT_PATH=
+CERT_PASSWORD=
 GRAPH_API_VERSION=v1.0
 
-# Storage configuration
-# Options: onedrive, sharepoint, local
-STORAGE_PROVIDER=onedrive
-
-# SharePoint settings (if using SharePoint storage)
-# SHAREPOINT_SITE_NAME=your_site_name
-# SHAREPOINT_DOCUMENT_LIBRARY=documents
-
-# OneDrive settings (if using OneDrive storage)
-ONEDRIVE_ROOT_FOLDER=NexusBusinessPlan
-
-# Local storage settings (if using local storage)
-LOCAL_STORAGE_PATH=/opt/projects/NexusBusinessBuilder/output
-
 # Idea Studio (shared TheHelm control-api integration)
-# Base URL of TheHelm control-api (e.g. https://control.example.com or http://127.0.0.1:8089)
 IDEA_STUDIO_API_BASE_URL=
-# Optional override for the hosted public UI link (defaults to <IDEA_STUDIO_API_BASE_URL>/idea-studio?mode=public&tenant=nexus-solutions)
 IDEA_STUDIO_PUBLIC_URL=
-# Tenant slug enforced on all proxied Idea Studio requests
 IDEA_STUDIO_TENANT_ID=nexus-solutions
-# Staging domain rule for graduated Nexus-Solutions apps (<slug>.nexus-solutions.us)
 IDEA_STUDIO_STAGING_DOMAIN=nexus-solutions.us
-# Optional Bearer token if upstream control-api requires authentication
-# IDEA_STUDIO_API_TOKEN=
-# Timeout in seconds for long-running M1/M2/sprint proxy calls
+IDEA_STUDIO_API_TOKEN=
 IDEA_STUDIO_TIMEOUT_SECONDS=180
