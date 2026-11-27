@@ -13,6 +13,14 @@ RUN npm ci
 # Copy the rest of the application code
 COPY . .
 
+# Optional Vite build-time configuration (defaults to backend proxy /api/idea-studio)
+ARG VITE_API_BASE=""
+ARG VITE_IDEA_STUDIO_API_URL=""
+ARG VITE_IDEA_STUDIO_PUBLIC_URL=""
+ENV VITE_API_BASE=$VITE_API_BASE
+ENV VITE_IDEA_STUDIO_API_URL=$VITE_IDEA_STUDIO_API_URL
+ENV VITE_IDEA_STUDIO_PUBLIC_URL=$VITE_IDEA_STUDIO_PUBLIC_URL
+
 # Build the application
 RUN npm run build
 

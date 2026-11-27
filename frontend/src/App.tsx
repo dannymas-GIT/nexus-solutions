@@ -12,6 +12,7 @@ import SetKpisPage from './pages/analysis-engine/SetKpisPage';
 import PortalPage from './pages/PortalPage';
 import ServicesPage from './pages/ServicesPage';
 import PackagesPage from './pages/PackagesPage';
+import IdeaStudioPage from './pages/IdeaStudioPage';
 
 /**
  * App component
@@ -52,7 +53,7 @@ function App() {
           </Layout>
         } />
         
-        {/* Business Plan routes */}
+        {/* Business Plan routes — unified with Idea Studio */}
         <Route path="/create-business-plan" element={
           <Layout>
             <BusinessPlanWizard />
@@ -60,7 +61,7 @@ function App() {
         } />
         <Route path="/my-plans" element={
           <Layout>
-            <BusinessPlanWizard />
+            <IdeaStudioPage defaultTab="inbox" />
           </Layout>
         } />
         <Route path="/plan-templates" element={
@@ -94,6 +95,18 @@ function App() {
         <Route path="/analysis-engine/set-kpis" element={
           <Layout>
             <SetKpisPage />
+          </Layout>
+        } />
+
+        {/* Idea Studio routes */}
+        <Route path="/idea-studio" element={
+          <Layout>
+            <IdeaStudioPage />
+          </Layout>
+        } />
+        <Route path="/idea-studio/:tab" element={
+          <Layout>
+            <IdeaStudioPage />
           </Layout>
         } />
         

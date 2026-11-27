@@ -152,4 +152,22 @@ button {
 
 .prose a:hover {
   text-decoration: underline;
-} 
+}
+
+@media print {
+  body.idea-studio-printing * {
+    visibility: hidden;
+  }
+  body.idea-studio-printing .idea-studio-print-target,
+  body.idea-studio-printing .idea-studio-print-target * {
+    visibility: visible;
+  }
+  body.idea-studio-printing .idea-studio-print-target {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none;
+    box-shadow: none;
+  }
+}

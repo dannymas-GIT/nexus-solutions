@@ -57,7 +57,15 @@ class Settings(BaseSettings):
     
     # Database Configuration
     DATABASE_URL: Optional[str] = None
-    
+
+    # Idea Studio (shared TheHelm control-api integration)
+    IDEA_STUDIO_API_BASE_URL: Optional[str] = None
+    IDEA_STUDIO_PUBLIC_URL: Optional[str] = None
+    IDEA_STUDIO_TENANT_ID: str = "nexus-solutions"
+    IDEA_STUDIO_STAGING_DOMAIN: str = "nexus-solutions.us"
+    IDEA_STUDIO_API_TOKEN: Optional[str] = None
+    IDEA_STUDIO_TIMEOUT_SECONDS: int = 180
+
     class Config:
         case_sensitive = True
         env_file = ".env"

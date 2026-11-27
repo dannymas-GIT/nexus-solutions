@@ -30,3 +30,13 @@ These run on every pipeline. Keep fast (< 30 seconds total).
 ## Feature Tests
 
 Add tests for new features here.
+
+### Test: Idea Studio Page Loads
+**URL:** ${BASE_URL}/idea-studio
+**Steps:**
+1. Wait for page load
+**Expected:**
+- Page loads within 5 seconds
+- See "Idea Studio"
+- See "Submit Brief"
+- See "nexus-solutions"

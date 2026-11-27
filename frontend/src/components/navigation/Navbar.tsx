@@ -32,23 +32,44 @@ const Navbar: React.FC = () => {
       path: '/dashboard',
     },
     {
+      label: 'Idea Studio',
+      path: '/idea-studio',
+      submenu: [
+        {
+          label: 'Submit Brief',
+          path: '/idea-studio/submit',
+          description: 'Submit a new product concept for M1/M2 validation'
+        },
+        {
+          label: 'Milestone & Approval Inbox',
+          path: '/idea-studio/inbox',
+          description: 'Review M1/M2 reports and sequential approval gates'
+        },
+        {
+          label: 'My App Workspace',
+          path: '/idea-studio/workspace',
+          description: 'Graduate apps, run sprints, staging, and FinOps rollups'
+        }
+      ]
+    },
+    {
       label: 'Business Plans',
       path: '/create-business-plan',
       submenu: [
         { 
           label: 'Create New Plan', 
           path: '/create-business-plan',
-          description: 'Start with our step-by-step wizard' 
+          description: '5-step intake wizard wired into Idea Studio' 
         },
         { 
-          label: 'My Plans', 
+          label: 'My Plans & Briefs', 
           path: '/my-plans',
-          description: 'View and edit your saved plans'
+          description: 'View submitted plans, M1/M2 reports, and gates'
         },
         { 
-          label: 'Templates', 
-          path: '/plan-templates',
-          description: 'Pre-made business plan templates'
+          label: 'App Workspace & Staging', 
+          path: '/idea-studio/workspace',
+          description: 'Graduated apps, sprints, and *.nexus-solutions.us previews'
         }
       ]
     },
@@ -202,6 +223,7 @@ const Navbar: React.FC = () => {
                               <Link
                                 key={subItem.path}
                                 to={subItem.path}
+                                onClick={() => setOpenDropdown(null)}
                                 className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
                               >
                                 <div className="font-medium">{subItem.label}</div>
